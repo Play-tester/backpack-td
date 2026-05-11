@@ -1,0 +1,52 @@
+.modal-overlay {
+  position: absolute; inset: 0;
+  background: rgba(58,26,5,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; backdrop-filter: blur(2px);
+}
+.modal {
+  background: #f5e6c0;
+  border: 4px solid #3a1a05; border-radius: 16px;
+  padding: 24px 20px; width: 320px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  box-shadow: 6px 6px 0 #3a1a05;
+}
+.modal-badge {
+  background: #f0c030; color: #3a1a05;
+  font-size: 11px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1.5px; padding: 4px 16px;
+  border-radius: 20px; border: 2px solid #3a1a05;
+  text-transform: uppercase;
+}
+.modal-subtitle { color: #7a4520; font-size: 15px; font-weight: 700; }
+
+.upgrade-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.upgrade-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #fff8e8;
+  border: 3px solid #3a1a05; border-radius: 12px;
+  padding: 12px 14px; cursor: pointer; text-align: left;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s, box-shadow 0.1s;
+  width: 100%; position: relative;
+}
+.upgrade-card:hover { transform: translateY(-3px); box-shadow: 5px 5px 0 #3a1a05; }
+.upgrade-card.recommended { border-color: #e03030; box-shadow: 3px 3px 0 #e03030; }
+.upgrade-card.recommended:hover { box-shadow: 5px 5px 0 #e03030; }
+.upgrade-rec-badge {
+  position: absolute; top: -8px; right: 10px;
+  background: #e03030; color: #fff;
+  font-size: 9px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  padding: 2px 8px; border-radius: 10px;
+  border: 2px solid #3a1a05; pointer-events: none; text-transform: uppercase;
+}
+.modal.modal-base { border-color: #5ab040; box-shadow: 6px 6px 0 #3a7020; }
+.modal.modal-base .modal-badge { background: #5ab040; color: #fff; border-color: #3a7020; }
+.modal.modal-base .upgrade-card:hover { border-color: #5ab040; box-shadow: 5px 5px 0 #3a7020; }
+
+.upgrade-icon { font-size: 26px; flex-shrink: 0; width: 32px; text-align: center; }
+.upgrade-text { display: flex; flex-direction: column; gap: 3px; }
+.upgrade-title { color: #3a1a05; font-size: 16px; font-weight: 900; font-family: 'Fredoka One', cursive; }
+.upgrade-desc { color: #7a5a30; font-size: 13px; font-weight: 600; }

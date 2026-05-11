@@ -1,0 +1,4 @@
+.battle-canvas { display: block; width: 100%; height: 100%; border-radius: 6px; border: 3px solid #3a1a05; }
+.battle-canvas-scroll { overflow: hidden; scrollbar-width: none; }
+.battle-canvas-scroll::-webkit-scrollbar { display: none; }
+.battle-canvas-scroll canvas { display: block; }

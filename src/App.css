@@ -1,0 +1,461 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Portrait game container ── */
+.game-container {
+  width: 390px;
+  height: 844px;
+  background: #f5e6c0;
+  border: 4px solid #3a1a05;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 6px 6px 0px #3a1a05, 0 0 0 2px #3a1a05;
+  position: relative;
+}
+
+/* ── Header ── */
+.game-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #7a4520;
+  border-bottom: 3px solid #3a1a05;
+  flex-shrink: 0;
+}
+
+.resources {
+  display: flex;
+  width: 100%;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #f5e6c0;
+  font-size: 17px;
+  font-family: 'Fredoka One', cursive;
+}
+
+.resource strong { color: #f0c030; }
+
+.resource-label {
+  color: #d4a870;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.resource-icon { font-size: 20px; line-height: 1; }
+
+/* ── XP bar ── */
+.xp-bar-wrap {
+  display: inline-block;
+  width: 40px; height: 6px;
+  background: #5a2a10;
+  border-radius: 3px;
+  border: 1px solid #3a1a05;
+  vertical-align: middle;
+  overflow: hidden;
+}
+.xp-bar-fill {
+  display: block; height: 100%;
+  background: #5ab040;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.xp-text { font-size: 15px; color: #a0d860; font-family: 'Fredoka One', cursive; }
+
+/* ── Mana bar ── */
+.mana-bar-wrap {
+  display: inline-block;
+  width: 52px; height: 6px;
+  background: #5a2a10;
+  border-radius: 3px;
+  border: 1px solid #3a1a05;
+  vertical-align: middle;
+  overflow: hidden;
+}
+.mana-bar-fill {
+  display: block; height: 100%;
+  background: #4ab8c8;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.mana-text { font-size: 15px; color: #4ab8c8; font-family: 'Fredoka One', cursive; }
+
+/* ── Buffs bar ── */
+.buffs-bar {
+  display: flex;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #e8d4a0;
+  border-bottom: 3px solid #3a1a05;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.buff-chip {
+  font-size: 11px;
+  color: #3a1a05;
+  font-weight: 800;
+  background: #f0c030;
+  border: 2px solid #3a1a05;
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-family: 'Fredoka One', cursive;
+}
+.buff-waves { color: #4ab8c8; font-size: 11px; font-weight: 800; }
+
+/* ── Zones ── */
+.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 8px;
+}
+.backpack-zone {
+  flex: 1;
+  border-bottom: 3px solid #3a1a05;
+  background: url('/backpack.png') no-repeat center/100% 100%;
+}
+
+/* ── Zone header row (label + settings button) ── */
+.zone-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.settings-btn {
+  background: #f5e6c0;
+  border: 2px solid #3a1a05;
+  border-radius: 50%;
+  width: 30px; height: 30px;
+  font-size: 24px;
+  overflow: visible;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #3a1a05;
+  transition: transform 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+.settings-btn:hover { transform: rotate(30deg); background: #f0c030; }
+
+/* ── Sell confirmation modal ── */
+.sell-confirm-panel {
+  background: #f5e6c0;
+  border: 4px solid #3a1a05;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 #3a1a05;
+  padding: 20px 24px;
+  width: 260px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.sell-confirm-icon {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  background: #e8d4a0; border: 3px solid #3a1a05; border-radius: 12px;
+  box-shadow: 3px 3px 0 #3a1a05;
+}
+.sell-confirm-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 20px; color: #3a1a05; text-align: center;
+}
+.sell-confirm-price {
+  font-size: 14px; color: #7a5a30; text-align: center;
+  font-family: 'Fredoka One', cursive;
+}
+.sell-confirm-price strong { color: #c8922a; font-size: 18px; }
+.sell-confirm-btns {
+  display: flex; gap: 10px; width: 100%; margin-top: 4px;
+}
+.sell-confirm-btn {
+  flex: 1; padding: 9px 0;
+  border: 3px solid #3a1a05; border-radius: 30px;
+  font-family: 'Fredoka One', cursive; font-size: 15px; font-weight: 900;
+  cursor: pointer; box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.sell-confirm-btn:hover  { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
+.sell-confirm-btn:active { transform: translateY(1px);  box-shadow: 1px 1px 0 #3a1a05; }
+.sell-confirm-btn--cancel  { background: #f5e6c0; color: #3a1a05; }
+.sell-confirm-btn--confirm { background: #e03030; color: #fff; }
+
+/* ── Settings modal ── */
+.settings-backdrop {
+  position: absolute; inset: 0; z-index: 500;
+  background: rgba(58, 26, 5, 0.55);
+  display: flex; align-items: center; justify-content: center;
+}
+.settings-panel {
+  background: #f5e6c0;
+  border: 4px solid #3a1a05;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 #3a1a05;
+  padding: 20px 24px;
+  width: 280px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.settings-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px;
+  color: #3a1a05;
+  text-align: center;
+}
+.settings-row {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.settings-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  color: #3a1a05;
+}
+.settings-slider-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.settings-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #f0c030 0%, #f0c030 var(--val, 50%), #c8a870 var(--val, 50%), #c8a870 100%);
+  border: 2px solid #3a1a05;
+  outline: none;
+  cursor: pointer;
+}
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #f0c030;
+  border: 3px solid #3a1a05;
+  box-shadow: 2px 2px 0 #3a1a05;
+  cursor: pointer;
+}
+.settings-slider::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #f0c030;
+  border: 3px solid #3a1a05;
+  cursor: pointer;
+}
+.settings-slider-val {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  color: #3a1a05;
+  min-width: 28px;
+  text-align: right;
+}
+.settings-close {
+  background: #e03030;
+  color: #fff;
+  border: 3px solid #3a1a05;
+  border-radius: 30px;
+  padding: 8px 0;
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s;
+}
+.settings-close:hover { background: #c02020; transform: translateY(-1px); }
+.shop-zone {
+  min-height: 180px;
+  height: auto;
+  flex-shrink: 0;
+  background: url('/shop_b.png') center/cover no-repeat;
+}
+.zone-label {
+  align-self: flex-start;
+  color: #3a1a05;
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  background: #f0c030;
+  border: 2px solid #3a1a05;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+/* ── Spell bar ── */
+.spell-bar {
+  position: absolute; bottom: 10px; right: 10px;
+  display: flex; gap: 8px; z-index: 20;
+}
+.spell-btn {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: #f5e6c0;
+  border: 3px solid #3a1a05;
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab; position: relative;
+  box-shadow: 3px 3px 0 #3a1a05;
+}
+.spell-btn:active { cursor: grabbing; box-shadow: 1px 1px 0 #3a1a05; transform: translate(2px,2px); }
+.spell-btn--cooling { border-color: #b0a080; cursor: not-allowed; opacity: 0.55; }
+.spell-btn-icon { font-size: 26px; line-height: 1; pointer-events: none; }
+.spell-btn-cd {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+  color: #3a1a05;
+  background: rgba(245, 230, 192, 0.75);
+  border-radius: 9px;
+  font-family: 'Fredoka One', cursive;
+}
+
+/* ── Spell drag ghost ── */
+.spell-drag-ghost {
+  position: fixed; width: 48px; height: 48px; font-size: 32px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 3000;
+  filter: drop-shadow(3px 3px 0 #3a1a05);
+}
+
+/* ── Sell hint overlay ── */
+.sell-hint-overlay {
+  position: absolute; bottom: 76px; left: 50%;
+  transform: translateX(-50%); z-index: 150; cursor: pointer;
+}
+
+/* ── Floating drag ghost ── */
+.drag-ghost-float {
+  position: fixed; pointer-events: none; z-index: 1000;
+  border-radius: 6px;
+  border: 3px solid #3a1a05;
+  opacity: 0.85;
+  box-shadow: 3px 3px 0 #3a1a05;
+}
+
+/* ── Backpack grid area ── */
+.backpack-grid-area {
+  flex: 1; width: 100%; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Battle phase ── */
+.battle-wrapper {
+  flex: 2 1 0; min-height: 0;
+  display: flex; flex-direction: column;
+  align-items: stretch; justify-content: stretch;
+  background: url('/battle_1.png') no-repeat center/100% 100%;
+  overflow: hidden;
+}
+
+.battle-lower {
+  flex: 1 1 0; min-height: 0;
+  display: flex; flex-direction: column;
+  background: #f5e6c0;
+  border-top: 3px solid #3a1a05;
+}
+.battle-lower .deploy-bench {
+  flex: 1 1 0; min-height: 0;
+  overflow: hidden;
+}
+.battle-wrapper--alt        { background: url('/battle_2.png') no-repeat center/100% 100%; }
+.battle-wrapper--triplelane { background: url('/battle_3.png') no-repeat center/100% 100%; }
+.battle-wrapper--diamond    { background: url('/battle_4.png') no-repeat center/100% 100%; }
+.battle-wrapper--funnel     { background: url('/battle_5.png') no-repeat center/100% 100%; }
+.battle-wrapper--extzigzag  { background: url('/battle_2.png') no-repeat center/100% 100%; }
+
+.battle-hint { color: #7a4520; font-size: 14px; text-align: center; font-weight: 700; }
+
+/* ── Result popup ── */
+.result-popup-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end; z-index: 100;
+}
+.result-popup {
+  width: 100%; height: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-evenly;
+  padding: 20px 24px;
+  border-radius: 20px 20px 0 0;
+  border-top: 4px solid;
+}
+.popup-win  { background: #e8f5d0; border-color: #5ab040; }
+.popup-lose { background: #fde8e0; border-color: #e03030; }
+
+.popup-verdict {
+  font-size: 36px; font-weight: 900; letter-spacing: 2px;
+  font-family: 'Fredoka One', cursive;
+  text-transform: uppercase;
+  -webkit-text-stroke: 2px #3a1a05;
+}
+.verdict-win  { color: #5ab040; }
+.verdict-lose { color: #e03030; }
+
+.popup-stats { display: flex; gap: 20px; align-items: flex-end; }
+.popup-stat  { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.popup-stat-value {
+  font-size: 22px; font-weight: 900; color: #3a1a05;
+  font-family: 'Fredoka One', cursive;
+}
+.popup-stat-value.gold { color: #c8922a; }
+.popup-stat-value.mana { color: #4ab8c8; }
+.popup-stat-value.xp   { color: #5ab040; }
+.popup-stat-value.dim  { color: #b0a080; }
+
+.popup-stat-label {
+  font-size: 11px; color: #7a5a30; text-transform: uppercase;
+  letter-spacing: 0.8px; font-weight: 800;
+}
+.popup-breakdown { font-size: 13px; color: #7a5a30; text-align: center; }
+.popup-retry { color: #e03030; opacity: 0.85; }
+.popup-broken { font-size: 14px; color: #e03030; font-weight: 800; }
+
+.popup-tutorial-hints {
+  display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  background: rgba(240, 192, 48, 0.15);
+  border: 2px solid #f0c030; border-radius: 10px; margin-top: 4px;
+}
+.tutorial-hint { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #3a1a05; }
+.hint-icon { font-size: 17px; line-height: 1; }
+.hint-text { color: #5a3a10; }
+.hint-text strong { color: #c8922a; font-weight: 900; }
+
+.btn-continue {
+  padding: 10px 40px;
+  background: #f0c030;
+  color: #3a1a05;
+  border: 3px solid #3a1a05;
+  border-radius: 30px;
+  font-size: 17px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-continue:hover  { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
+.btn-continue:active { transform: translateY(1px); box-shadow: 1px 1px 0 #3a1a05; }
+
+/* ── Start battle button ── */
+.btn-battle {
+  margin-top: 4px; padding: 8px 24px;
+  background: #e03030; color: #fff;
+  border: 3px solid #3a1a05;
+  border-radius: 30px;
+  font-size: 16px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-battle:hover  { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
+.btn-battle:active { transform: translateY(1px); box-shadow: 1px 1px 0 #3a1a05; }
+
+.zone-placeholder {
+  color: #b0a080; font-size: 14px; font-weight: 700;
+  border: 3px dashed #c8b880; border-radius: 10px;
+  width: 100%; flex: 1;
+  display: flex; align-items: center; justify-content: center;
+}

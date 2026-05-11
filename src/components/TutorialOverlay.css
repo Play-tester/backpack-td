@@ -1,0 +1,35 @@
+.tutorial-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 150; pointer-events: none; }
+.tutorial-overlay--battle { bottom: 258px; }
+.tutorial-instruction {
+  background: #f0c030; border: 3px solid #3a1a05; border-radius: 12px;
+  padding: 12px 20px; color: #3a1a05;
+  font-size: 16px; font-weight: 900; font-family: 'Fredoka One', cursive;
+  text-align: center;
+  box-shadow: 4px 4px 0 #3a1a05;
+  animation: tutorial-pulse 2s ease-in-out infinite;
+  max-width: 280px;
+}
+@keyframes tutorial-pulse {
+  0%,100% { box-shadow: 4px 4px 0 #3a1a05; }
+  50%      { box-shadow: 6px 6px 0 #3a1a05; transform: translateY(-2px); }
+}
+.zone.tutorial-highlight { position: relative; }
+.zone.tutorial-highlight::before {
+  content: ''; position: absolute; inset: -4px;
+  border: 4px solid #f0c030; border-radius: 12px;
+  pointer-events: none; z-index: 1;
+  animation: tutorial-highlight-pulse 1.5s ease-in-out infinite;
+}
+@keyframes tutorial-highlight-pulse {
+  0%,100% { opacity: 0.7; }
+  50%      { opacity: 1; box-shadow: 0 0 0 4px rgba(240,192,48,0.4); }
+}
+.tutorial-highlight-btn {
+  border-color: #f0c030 !important;
+  box-shadow: 4px 4px 0 #3a1a05, 0 0 0 3px #f0c030 !important;
+  animation: tutorial-btn-pulse 1.5s ease-in-out infinite;
+}
+@keyframes tutorial-btn-pulse {
+  0%,100% { box-shadow: 4px 4px 0 #3a1a05, 0 0 0 3px rgba(240,192,48,0.7); }
+  50%      { box-shadow: 4px 4px 0 #3a1a05, 0 0 0 6px rgba(240,192,48,0.9); }
+}

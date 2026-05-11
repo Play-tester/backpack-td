@@ -1,0 +1,279 @@
+/* ── Screen wrapper ── */
+.deploy-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: #5ab8c8;
+  position: relative;
+}
+
+/* ── Back button ── */
+.deploy-back {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 10;
+  background: #f5e6c0;
+  color: #3a1a05;
+  border: 2px solid #3a1a05;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Fredoka One', cursive;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #3a1a05;
+  transition: transform 0.1s;
+}
+.deploy-back:hover {
+  background: #f0c030;
+  transform: translateY(-1px);
+}
+
+/* ── Arena (takes 2/3 of screen) ── */
+.deploy-arena {
+  flex: 2 1 0;
+  min-height: 0;
+  position: relative;
+  background: url('/battle_1.png') no-repeat center/100% 100%;
+  border-bottom: 3px solid #3a1a05;
+  touch-action: none;
+  overflow: hidden;
+}
+
+.deploy-arena.zigzag      { background: url('/battle_2.png') no-repeat center/100% 100%; }
+.deploy-arena.triplelane  { background: url('/battle_3.png') no-repeat center/100% 100%; }
+.deploy-arena.diamond     { background: url('/battle_4.png') no-repeat center/100% 100%; }
+.deploy-arena.funnel      { background: url('/battle_5.png') no-repeat center/100% 100%; }
+.deploy-arena.extzigzag   { background: none; }
+
+.deploy-arena::-webkit-scrollbar { width: 4px; }
+.deploy-arena::-webkit-scrollbar-track { background: #5ab8c8; }
+.deploy-arena::-webkit-scrollbar-thumb { background: #7a4520; border-radius: 2px; }
+
+.arena-lane {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+.arena-spawn-label {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #3a1a05;
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.arena-drop-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #3a1a05;
+  font-size: 15px;
+  font-family: 'Fredoka One', cursive;
+  text-align: center;
+  line-height: 1.5;
+  pointer-events: none;
+  background: rgba(245, 230, 192, 0.75);
+  border: 2px solid #3a1a05;
+  border-radius: 12px;
+  padding: 6px 14px;
+}
+
+/* ── Predefined slots ── */
+.deploy-slot {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.slot-empty {
+  border: 3px dashed #3a1a05;
+  background: rgba(245, 230, 192, 0.5);
+}
+.slot-empty::after {
+  content: '+';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a1a05;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.slot-filled {
+  border: none;
+  background: transparent;
+}
+
+/* Tower inside a filled slot */
+.slot-tower {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  border: 3px solid #3a1a05;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: opacity 0.1s, transform 0.1s;
+}
+.slot-tower:active      { cursor: grabbing; }
+.slot-tower.is-dragging { opacity: 0.25; }
+
+.slot-tower-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
+.arena-tower-label {
+  font-size: 10px;
+  font-weight: 800;
+  font-family: 'Fredoka One', cursive;
+  color: #3a1a05;
+  line-height: 1;
+}
+
+.arena-tower-tier {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  font-size: 10px;
+  font-weight: 800;
+  font-family: 'Fredoka One', cursive;
+  color: #3a1a05;
+  background: #f0c030;
+  border: 2px solid #3a1a05;
+  border-radius: 4px;
+  padding: 1px 3px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── Lower section (takes 1/3 of screen): bench + button ── */
+.deploy-lower {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f5e6c0;
+  border-top: 3px solid #3a1a05;
+}
+
+/* ── Bench ── */
+.deploy-bench {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 4px;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bench-section-label {
+  font-size: 11px;
+  color: #3a1a05;
+  font-weight: 700;
+  font-family: 'Fredoka One', cursive;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+  border-left: 3px solid #f0c030;
+  padding-left: 8px;
+}
+
+/* ── Mini backpack grid area ── */
+.bench-grid-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bench-backpack-grid {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  border: 3px solid #3a1a05;
+  border-radius: 8px;
+  overflow: hidden;
+  user-select: none;
+  background: url('/backpack.png') no-repeat center/100% 100%;
+  box-shadow: 3px 3px 0 #3a1a05;
+}
+
+.bench-bg-cell {
+  border: 1px solid rgba(58, 26, 5, 0.3);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* ── Launch button ── */
+.btn-launch {
+  margin: 0 12px 12px;
+  padding: 10px;
+  background: #e03030;
+  color: #fff;
+  border: 3px solid #3a1a05;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s;
+}
+.btn-launch:hover          { background: #c02020; transform: translateY(-1px); }
+.btn-launch:active         { transform: translateY(0); box-shadow: 1px 1px 0 #3a1a05; }
+.btn-launch.disabled       { background: #b0a090; color: #7a6a60; cursor: not-allowed; border-color: #9a8a78; box-shadow: none; }
+.btn-launch.disabled:hover { transform: none; }
+
+.launch-count {
+  opacity: 0.75;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* ── Floating ghost ── */
+.deploy-ghost {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #3a1a05;
+  box-shadow: 3px 3px 0 #3a1a05;
+  opacity: 0.85;
+}
