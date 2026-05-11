@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './App.css'
-import { BATTLE_W, BATTLE_H, isZigzagWave, isTripleLaneWave, isDiamondWave, isFunnelWave, isExtZigzagWave, isLongWave } from './battle/types'
+import { BATTLE_W, BATTLE_H, isZigzagWave, isTripleLaneWave, isDiamondWave, isFunnelWave, isExtZigzagWave } from './battle/types'
 import type { BattleResult, DeployedTower } from './battle/types'
 import BackpackGrid, { CELL_SIZE } from './components/BackpackGrid'
 import BackpackMiniView from './components/BackpackMiniView'
@@ -921,7 +921,7 @@ function TradeUI({
 
 // ── Battle phase UI ────────────────────────────────────────────────────────
 function BattlePhaseUI({
-  gold, xp, xpNeeded, baseLevel, wave, buffs,
+  gold: _gold, xp: _xp, xpNeeded: _xpNeeded, baseLevel: _baseLevel, wave, buffs,
   deployedTowers, deployedIds, placedItems, gridRows, gridCols,
   hasAcademy, unlockedSpells,
   tutorialConfig, showResultPopup, roundResult,
