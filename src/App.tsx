@@ -147,7 +147,8 @@ export default function App() {
     if (!main || !battle) return
     if (phase === 'battle') {
       main.pause()
-      battle.currentTime = 0
+      const dur = battle.duration
+      battle.currentTime = dur && isFinite(dur) ? Math.random() * dur : 0
       battle.play().catch(() => {})
     } else {
       battle.pause()
