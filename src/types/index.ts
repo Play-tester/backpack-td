@@ -63,11 +63,13 @@ export interface ItemDef {
   label: string
   color: string          // CSS color used for rendering
   image?: string         // optional sprite, e.g. '/archer.png'
+  tierImages?: string[]  // optional per-tier sprites, index 0 = T1, overrides image when present
   // military stats
   damage?: number
   attackSpeed?: number   // attacks per second
   range?: number
   maxDurability?: number
+  maxTier?: number        // optional hard cap on merging (e.g. 7 for archer)
   // economic stats
   goldPerRound?: number
 }

@@ -16,7 +16,7 @@ export const SPELL_DEFS: Record<SpellKind, SpellDef> = {
     description: 'Launches a fireball that deals 80 damage to all enemies in a splash radius.',
     icon: '🔥',
     cooldown: 10,
-    unlockCost: 100,
+    unlockCost: 50,
   },
 }
 

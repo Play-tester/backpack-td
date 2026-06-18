@@ -9,10 +9,20 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     label: 'Archer',
     color: '#4ade80',
     image: '/archer_tower.png',
+    tierImages: [
+      '/archer_tower_T1.png', // T1
+      '/archer_tower_T2.png', // T2
+      '/archer_tower_T3.png', // T3
+      '/archer_tower_T4.png', // T4
+      '/archer_tower_T5.png', // T5
+      '/archer_tower_T6.png', // T6
+      '/archer_tower_T7.png', // T7
+    ],
     damage: 10,
     attackSpeed: 2,
     range: 3,
     maxDurability: 3,
+    maxTier: 7,
   },
   cannon: {
     kind: 'cannon',
@@ -119,6 +129,15 @@ export function getScaledGold(item: Item): number {
   return Math.round(base * getEconomicMultiplier(item.tier))
 }
 
+/** Returns the correct image path for an item at its current tier. */
+export function getItemImage(item: Item): string | undefined {
+  const { tierImages, image } = item.def
+  if (tierImages && tierImages.length >= item.tier) {
+    return tierImages[item.tier - 1]
+  }
+  return image
+}
+
 // ── Instance factory ───────────────────────────────────────────────────────
 let _nextId = 1
 
@@ -136,7 +155,8 @@ export function createItem(kind: ItemKind, tier = 1): Item {
 export function mergeItems(a: Item, b: Item): Item | null {
   if (a.def.kind !== b.def.kind) return null
   if (a.tier !== b.tier) return null
-  // No tier limit - can merge indefinitely
+  // Respect per-kind tier cap if defined
+  if (a.def.maxTier !== undefined && a.tier >= a.def.maxTier) return null
   const merged = createItem(a.def.kind, a.tier + 1)
   // Preserve the better durability instead of resetting to max
   if (a.durability !== undefined && b.durability !== undefined)

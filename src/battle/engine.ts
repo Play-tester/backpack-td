@@ -1,4 +1,4 @@
-import { getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
+import { getItemImage, getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
 import { shapeDims, type ItemSize } from '../types'
 import {
@@ -215,7 +215,7 @@ export function initBattle(
       rangePx:      (KIND_RANGE[item.def.kind] ?? 120) * rangeMult * buffs.rangeBonus,
       cooldown:     0,
       color:        item.def.color,
-      image:        item.def.image,
+      image:        getItemImage(item),
       tier:         item.tier,
       shapeCols,
       shapeRows,

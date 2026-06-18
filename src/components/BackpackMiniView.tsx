@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getItemImage } from '../lib/items'
 import { GRID_COLS, GRID_ROWS, SHAPE_OFFSETS, shapeDims, type Item, type ItemSize, type PlacedItem } from '../types'
 
 interface Props {
@@ -82,14 +83,14 @@ export default function BackpackMiniView({ placedItems, deployedIds = new Set(),
                     filter:        !isMilitary ? 'grayscale(1) brightness(0.45)' : undefined,
                     cursor:        draggable ? 'grab' : 'default',
                     pointerEvents: 'auto',
-                    ...(!item.def.image ? { background: item.def.color } : {}),
+                    ...(!getItemImage(item) ? { background: item.def.color } : {}),
                   }}
                   onPointerDown={draggable ? e => onStartDrag!(e, item) : undefined}
                 />
               ))}
-              {item.def.image && (
+              {getItemImage(item) && (
                 <img
-                  src={item.def.image} alt="" draggable={false}
+                  src={getItemImage(item)} alt="" draggable={false}
                   style={{
                     position:      'absolute',
                     inset:         2,

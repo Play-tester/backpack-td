@@ -1,4 +1,5 @@
 import { useDrag } from '../context/DragContext'
+import { getItemImage } from '../lib/items'
 import { SHOP_COLS, SHOP_ROWS, type ShopSlot } from '../lib/shop'
 import { SHAPE_OFFSETS, shapeDims, type Item, type ItemSize } from '../types'
 import { CELL_SIZE, getSizeDims } from './BackpackGrid'
@@ -126,9 +127,9 @@ export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, c
               </svg>
 
               {/* Tower image */}
-              {slot.item.def.image && !slot.sold && (
+              {getItemImage(slot.item) && !slot.sold && (
                 <img
-                  src={slot.item.def.image} alt="" draggable={false}
+                  src={getItemImage(slot.item)} alt="" draggable={false}
                   style={{
                     position: 'absolute', inset: 0,
                     width: '100%', height: '100%',

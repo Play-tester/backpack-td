@@ -12,7 +12,7 @@ import Tooltip from './components/Tooltip'
 import Shop from './components/Shop'
 import { type ActiveDrag, DragProvider, useDrag } from './context/DragContext'
 import { canPlace, checkMerge, createGrid, getItemCells, moveItem, placeItem, removeItem } from './lib/grid'
-import { getScaledGold, mergeItems } from './lib/items'
+import { getItemImage, getScaledGold, mergeItems } from './lib/items'
 import {
   INSTANT_UPGRADES, computeBuffs, mergeBuffs, applyBasePerk,
   pickThreeUpgrades, pickThreeBasePerks, manaForNextLevel, xpForNextBaseLevel,
@@ -872,8 +872,8 @@ function TradeUI({
       {pendingSell && (
         <div className="settings-backdrop" onClick={() => setPendingSell(null)}>
           <div className="sell-confirm-panel" onClick={e => e.stopPropagation()}>
-            <div className="sell-confirm-icon">{pendingSell.item.def.image
-              ? <img src={pendingSell.item.def.image} alt="" style={{ width: 56, height: 56, objectFit: 'contain' }} />
+            <div className="sell-confirm-icon">{getItemImage(pendingSell.item)
+              ? <img src={getItemImage(pendingSell.item)} alt="" style={{ width: 56, height: 56, objectFit: 'contain' }} />
               : <span style={{ fontSize: 40 }}>📦</span>
             }</div>
             <div className="sell-confirm-title">Sell {pendingSell.item.def.label}?</div>

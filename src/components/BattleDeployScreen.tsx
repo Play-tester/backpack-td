@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { BATTLE_H, BATTLE_W, LANE_CX, LANE_W, isZigzagWave, ZIGZAG_WAYPOINTS, TRIPLE_LANE_XS, isTripleLaneWave, DIAMOND_PATH_A, DIAMOND_PATH_B, isDiamondWave, FUNNEL_PATH_A, FUNNEL_PATH_B, isFunnelWave, LONG_BATTLE_H, EXT_ZIGZAG_WAYPOINTS, isExtZigzagWave, isLongWave, type DeployedTower } from '../battle/types'
 import { KIND_RANGE } from '../battle/engine'
+import { getItemImage } from '../lib/items'
 import type { Buffs } from '../lib/levelup'
 import { shapeDims, type Item, type ItemSize, type PlacedItem } from '../types'
 import BackpackMiniView from './BackpackMiniView'
@@ -282,8 +283,8 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
                   style={{ background: item.def.color, width: slotW, height: slotH }}
                   onPointerDown={e => startSlotDrag(e, item, slot.id)}
                 >
-                  {item.def.image
-                    ? <img src={item.def.image} alt={item.def.label} className="slot-tower-img" draggable={false} />
+                  {getItemImage(item)
+                    ? <img src={getItemImage(item)} alt={item.def.label} className="slot-tower-img" draggable={false} />
                     : <span className="arena-tower-label">{item.def.label.slice(0, 3).toUpperCase()}</span>
                   }
                   {item.tier >= 2 && <span className="arena-tower-tier">{item.tier}</span>}
@@ -344,8 +345,8 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
           className="deploy-ghost"
           style={{ left: drag.mouseX - 22, top: drag.mouseY - 22, background: drag.item.def.color }}
         >
-          {drag.item.def.image
-            ? <img src={drag.item.def.image} alt="" className="slot-tower-img" draggable={false} />
+          {getItemImage(drag.item)
+            ? <img src={getItemImage(drag.item)} alt="" className="slot-tower-img" draggable={false} />
             : <span className="arena-tower-label">{drag.item.def.label.slice(0, 3).toUpperCase()}</span>
           }
         </div>,

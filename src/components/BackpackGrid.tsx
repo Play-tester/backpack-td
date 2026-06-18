@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useDrag } from '../context/DragContext'
 import { canPlace, checkMerge, getItemCells, removeItem } from '../lib/grid'
+import { getItemImage } from '../lib/items'
 import { getSellPrice } from '../lib/shop'
 import {
   GRID_COLS, SHAPE_OFFSETS, shapeDims,
@@ -232,16 +233,16 @@ function PlacedItemView({
             width:         CS - 6,
             height:        CS - 6,
             pointerEvents: 'auto',
-            ...(item.def.image ? { border: 'none', boxShadow: 'none' } : { background: item.def.color }),
+            ...(getItemImage(item) ? { border: 'none', boxShadow: 'none' } : { background: item.def.color }),
           }}
           onPointerDown={e => onPointerDown(e, placed)}
         />
       ))}
 
       {/* Single image spanning the full bounding box — simpler and correct for all shapes */}
-      {item.def.image && (
+      {getItemImage(item) && (
         <img
-          src={item.def.image} alt="" draggable={false}
+          src={getItemImage(item)} alt="" draggable={false}
           style={{
             position:      'absolute',
             inset:         item.def.kind === 'bank'   ? undefined :
@@ -262,7 +263,7 @@ function PlacedItemView({
 
       {/* Label + meta centred in bounding box */}
       <div className="item-label-box">
-        {!item.def.image && <span className="item-label">{item.def.label}</span>}
+        {!getItemImage(item) && <span className="item-label">{item.def.label}</span>}
       </div>
 
       {/* Durability bar (military items only) */}
