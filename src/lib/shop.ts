@@ -21,8 +21,8 @@ export interface ShopSlot {
   gridRow: number
 }
 
-export const SHOP_COLS = 4
-export const SHOP_ROWS = 6
+export const SHOP_COLS = 6
+export const SHOP_ROWS = 4
 
 /** Try to place items on the shop grid without overlap. Returns positions or null if failed. */
 function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: number }[] | null {

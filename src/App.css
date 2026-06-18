@@ -265,7 +265,7 @@
 }
 .settings-close:hover { background: #c02020; transform: translateY(-1px); }
 .shop-zone {
-  min-height: 340px;
+  min-height: 260px;
   height: auto;
   flex-shrink: 0;
   background: url('/shop_b.png') center/cover no-repeat;
