@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cannon Tower — Stat Progression</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5e6c0;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  h1 { font-size: 22px; color: #3a1a05; margin-bottom: 6px; font-weight: 900; letter-spacing: 0.5px; }
+  .subtitle { font-size: 13px; color: #7a5a30; margin-bottom: 24px; }
+
+  .cards { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+
+  .card {
+    background: #fff8ec;
+    border: 3px solid #3a1a05;
+    border-radius: 14px;
+    padding: 14px 12px 12px;
+    width: 120px;
+    box-shadow: 4px 4px 0 #3a1a05;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    position: relative;
+  }
+
+  .tier-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: #f0c030; border: 2.5px solid #3a1a05; border-radius: 20px;
+    font-size: 12px; font-weight: 900; color: #3a1a05; padding: 2px 10px; white-space: nowrap;
+  }
+
+  .tower-icon { font-size: 36px; line-height: 1; margin-top: 4px; }
+
+  .stat-row { width: 100%; display: flex; flex-direction: column; gap: 5px; }
+  .stat { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+  .stat-label { color: #7a5a30; font-weight: 600; }
+  .stat-value { font-weight: 900; color: #3a1a05; }
+  .stat-value.up { color: #2a8a20; }
+
+  .bar-wrap { width: 100%; height: 6px; background: #e8d4a0; border-radius: 3px; overflow: hidden; border: 1px solid #c8b070; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-dmg   { background: #f97316; }
+  .bar-range { background: #4ab8c8; }
+  .bar-dps   { background: #c8400a; }
+
+  .divider { width: 100%; height: 1px; background: #d4b880; margin: 2px 0; }
+
+  .cost-row { display: flex; gap: 6px; font-size: 11px; font-weight: 800; color: #3a1a05; }
+  .cost-buy { color: #c8922a; }
+  .cost-sell { color: #888; }
+
+  /* splash badge */
+  .splash-badge {
+    font-size: 10px; font-weight: 800; color: #fff;
+    background: #e03030; border: 2px solid #3a1a05;
+    border-radius: 10px; padding: 1px 6px;
+  }
+
+  /* chart */
+  .chart-section {
+    background: #fff8ec; border: 3px solid #3a1a05; border-radius: 14px;
+    padding: 20px; box-shadow: 4px 4px 0 #3a1a05; margin-bottom: 24px;
+  }
+  .chart-title { font-size: 14px; font-weight: 900; color: #3a1a05; margin-bottom: 16px; }
+  .chart { display: flex; align-items: flex-end; gap: 12px; height: 160px; }
+  .chart-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .chart-bar-group { display: flex; gap: 3px; align-items: flex-end; flex: 1; width: 100%; }
+  .chart-bar { flex: 1; border-radius: 4px 4px 0 0; min-width: 8px; }
+  .chart-label { font-size: 11px; font-weight: 900; color: #3a1a05; }
+  .chart-val { font-size: 10px; color: #7a5a30; font-weight: 700; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #3a1a05; font-weight: 700; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* compare table */
+  .compare-section {
+    background: #fff8ec; border: 3px solid #3a1a05; border-radius: 14px;
+    padding: 20px; box-shadow: 4px 4px 0 #3a1a05; margin-bottom: 24px;
+  }
+  .compare-title { font-size: 14px; font-weight: 900; color: #3a1a05; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #f0c030; color: #3a1a05; font-weight: 900; padding: 6px 8px; text-align: left; border: 2px solid #3a1a05; }
+  td { padding: 6px 8px; border: 1px solid #d4b880; color: #3a1a05; font-weight: 700; }
+  tr:nth-child(even) td { background: #f5ead0; }
+  .highlight { color: #e03030; font-weight: 900; }
+
+  .merge-note {
+    background: #ffe8d0; border: 2.5px solid #3a1a05; border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; color: #3a1a05; line-height: 1.6;
+    box-shadow: 3px 3px 0 #3a1a05;
+  }
+  .merge-note strong { color: #c8922a; }
+</style>
+</head>
+<body>
+
+<h1>💣 Cannon Tower — Stat Progression</h1>
+<p class="subtitle">Base stats: 35 dmg · 0.5 atk/s · 165px range · splash radius 32px · 2×1 cells · 6g base cost</p>
+
+<div class="cards" id="cards"></div>
+
+<div class="chart-section">
+  <div class="chart-title">DPS vs Range by Tier</div>
+  <div class="chart" id="chart"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#c8400a"></div> DPS (damage × speed)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ab8c8"></div> Range (px)</div>
+  </div>
+</div>
+
+<div class="compare-section">
+  <div class="compare-title">Cannon vs Archer — DPS comparison by tier</div>
+  <table id="compare-table">
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>Cannon DPS</th>
+        <th>Archer DPS</th>
+        <th>Cannon advantage</th>
+        <th>Cannon splash</th>
+      </tr>
+    </thead>
+    <tbody id="compare-body"></tbody>
+  </table>
+</div>
+
+<div class="merge-note">
+  <strong>Cannon is a 2×1 item</strong> — it takes 2 backpack cells. High single-hit damage (35 base vs Archer's 10) with splash radius of 32px hits multiple enemies per shot. Attack speed is slow (0.5/s vs Archer's 2/s), so DPS is lower than Archer at T1 but the splash multiplier makes it much more effective against grouped enemies.<br><br>
+  <strong>DMG +50% every tier</strong>: T1: 35 → T2: 53 → T3: 79 → T4: 118 → T5: 177 → T6: 266 → T7: 399. <strong>Range jumps at T3 (+10%) and T5 (+10%)</strong>, capped at 200px.
+</div>
+
+<script>
+  const cannonTiers = [
+    { tier: 1, dmg: 35,  range: 165, dps: 17.5,  cost: 6,   sell: 5   },
+    { tier: 2, dmg: 53,  range: 165, dps: 26.5,  cost: 13,  sell: 11  },
+    { tier: 3, dmg: 79,  range: 182, dps: 39.5,  cost: 26,  sell: 23  },
+    { tier: 4, dmg: 118, range: 182, dps: 59.0,  cost: 56,  sell: 50  },
+    { tier: 5, dmg: 177, range: 200, dps: 88.5,  cost: 117, sell: 105 },
+    { tier: 6, dmg: 266, range: 200, dps: 133.0, cost: 245, sell: 220 },
+    { tier: 7, dmg: 399, range: 200, dps: 199.5, cost: 515, sell: 463 },
+  ]
+
+  const archerDps = [20, 30, 46, 68, 102, 152, 228]
+
+  const maxDmg   = Math.max(...cannonTiers.map(t => t.dmg))
+  const maxRange = Math.max(...cannonTiers.map(t => t.range))
+  const maxDps   = Math.max(...cannonTiers.map(t => t.dps))
+
+  // ── Cards ──
+  const cardsEl = document.getElementById('cards')
+  cannonTiers.forEach((t, i) => {
+    const prev = cannonTiers[i - 1]
+    const dmgUp   = prev && t.dmg   > prev.dmg
+    const rangeUp = prev && t.range > prev.range
+    const dpsUp   = prev && t.dps   > prev.dps
+
+    cardsEl.innerHTML += `
+      <div class="card">
+        <div class="tier-badge">Tier ${t.tier}</div>
+        <div class="tower-icon">💣</div>
+        <div class="splash-badge">💥 Splash</div>
+        <div class="stat-row">
+          <div class="stat">
+            <span class="stat-label">DMG</span>
+            <span class="stat-value ${dmgUp ? 'up' : ''}">${t.dmg}${dmgUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-dmg" style="width:${(t.dmg/maxDmg*100).toFixed(1)}%"></div></div>
+
+          <div class="stat">
+            <span class="stat-label">DPS</span>
+            <span class="stat-value ${dpsUp ? 'up' : ''}">${t.dps}${dpsUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-dps" style="width:${(t.dps/maxDps*100).toFixed(1)}%"></div></div>
+
+          <div class="stat">
+            <span class="stat-label">Range</span>
+            <span class="stat-value ${rangeUp ? 'up' : ''}">${t.range}px${rangeUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-range" style="width:${(t.range/maxRange*100).toFixed(1)}%"></div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="cost-row">
+          <span class="cost-buy">Buy ${t.cost}g</span>
+          <span class="cost-sell">Sell ${t.sell}g</span>
+        </div>
+      </div>`
+  })
+
+  // ── Chart ──
+  const chartEl = document.getElementById('chart')
+  const chartH  = 140
+  cannonTiers.forEach(t => {
+    const dpsH   = Math.round((t.dps   / maxDps)   * chartH)
+    const rangeH = Math.round((t.range / maxRange)  * chartH)
+    chartEl.innerHTML += `
+      <div class="chart-col">
+        <div class="chart-val">${t.dps}</div>
+        <div class="chart-bar-group" style="height:${chartH}px">
+          <div class="chart-bar bar-dps"   style="height:${dpsH}px; background:#c8400a"></div>
+          <div class="chart-bar bar-range" style="height:${rangeH}px; background:#4ab8c8"></div>
+        </div>
+        <div class="chart-label">T${t.tier}</div>
+      </div>`
+  })
+
+  // ── Compare table ──
+  const tbody = document.getElementById('compare-body')
+  cannonTiers.forEach((t, i) => {
+    const adps = archerDps[i]
+    const diff = (t.dps - adps).toFixed(1)
+    const ahead = t.dps >= adps
+    tbody.innerHTML += `
+      <tr>
+        <td>T${t.tier}</td>
+        <td>${t.dps}</td>
+        <td>${adps}</td>
+        <td class="${ahead ? 'highlight' : ''}">${ahead ? '+' : ''}${diff} ${ahead ? '(Cannon leads)' : '(Archer leads)'}</td>
+        <td>32px radius</td>
+      </tr>`
+  })
+</script>
+</body>
+</html>

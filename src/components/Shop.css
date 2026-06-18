@@ -1,8 +1,93 @@
 .shop-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-.shop-slots {
-  display: grid; gap: 10px; padding: 4px 8px;
-  justify-content: center; touch-action: none;
+
+/* ── Grid ── */
+.shop-grid {
+  background: #e8d4a0;
+  border: 3px solid #3a1a05;
+  border-radius: 10px;
+  padding: 3px;
+  box-shadow: 4px 4px 0 #3a1a05;
+  touch-action: none;
+  box-sizing: content-box;
 }
+
+.shop-grid-cell {
+  background: #f5e6c0;
+  border-radius: 6px;
+  border: 1.5px solid #c8b070;
+}
+.shop-grid-cell.occupied {
+  background: #ead8a8;
+}
+.shop-grid-cell.sold-cell {
+  background: #dfd0a0;
+}
+
+/* ── Item overlay ── */
+.shop-item-overlay {
+  cursor: grab;
+  z-index: 2;
+  user-select: none;
+  transition: filter 0.1s, opacity 0.1s;
+}
+.shop-item-overlay:hover:not(.sold):not(.cant-afford) {
+  filter: brightness(1.1) drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+}
+.shop-item-overlay.sold      { opacity: 0.5; cursor: default; pointer-events: none; }
+.shop-item-overlay.cant-afford { cursor: not-allowed; }
+.shop-item-overlay.is-dragging { opacity: 0.25; }
+
+/* ── Badges ── */
+.shop-cost-badge {
+  position: absolute;
+  bottom: 3px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #fff;
+  background: #c8922a;
+  border: 2px solid #3a1a05;
+  border-radius: 10px;
+  padding: 1px 7px;
+  line-height: 1.4;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 4;
+}
+.shop-cost-badge.too-expensive { background: #e03030; }
+
+.shop-tier-badge {
+  position: absolute;
+  top: 3px; left: 3px;
+  font-size: 10px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #3a1a05; background: #f0c030;
+  border: 2px solid #3a1a05; border-radius: 10px;
+  padding: 1px 5px; line-height: 1;
+  pointer-events: none; z-index: 4;
+}
+
+.shop-sold-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #b0a080; text-transform: uppercase;
+  pointer-events: none; z-index: 4;
+}
+
+/* ── Info button ── */
+.slot-info-btn {
+  position: absolute; top: 3px; right: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #4ab8c8; border: 2px solid #3a1a05;
+  color: #fff; font-size: 10px; font-weight: 900;
+  font-style: italic; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; line-height: 1; z-index: 5;
+}
+.slot-info-btn:hover { background: #2a98a8; }
+
+/* ── Reroll button ── */
 .btn-reroll {
   padding: 6px 20px;
   background: #f0c030; color: #3a1a05;
@@ -16,56 +101,3 @@
 .btn-reroll:hover:not(.disabled) { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
 .btn-reroll.disabled { opacity: 0.4; cursor: not-allowed; box-shadow: 1px 1px 0 #3a1a05; }
 .reroll-cost { color: #3a1a05; font-weight: 900; }
-
-.slot-info-btn {
-  position: absolute; top: 4px; right: 4px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #4ab8c8; border: 2px solid #3a1a05;
-  color: #fff; font-size: 10px; font-weight: 900;
-  font-style: italic; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0; line-height: 1; z-index: 5;
-}
-.slot-info-btn:hover { background: #2a98a8; }
-
-.shop-slot {
-  position: relative; display: flex; flex-direction: column;
-  align-items: center; gap: 5px; cursor: grab;
-  padding: 8px 6px 6px;
-  background: #f5e6c0;
-  border: 3px solid #3a1a05; border-radius: 10px;
-  min-width: 72px;
-  box-shadow: 3px 3px 0 #3a1a05;
-  transition: transform 0.1s, box-shadow 0.1s, opacity 0.1s;
-  user-select: none;
-}
-.shop-slot:hover:not(.sold):not(.cant-afford) {
-  transform: translateY(-4px); box-shadow: 5px 5px 0 #3a1a05;
-}
-.shop-slot.sold { opacity: 0.45; cursor: default; }
-.shop-slot.cant-afford { opacity: 0.6; cursor: not-allowed; }
-.shop-slot.is-dragging { opacity: 0.25; }
-
-.slot-shape-area {
-  position: relative; height: 52px;
-  display: flex; align-items: center; justify-content: center;
-}
-.slot-tier-badge {
-  position: absolute; bottom: 2px; right: 2px;
-  font-size: 10px; font-weight: 900;
-  font-family: 'Fredoka One', cursive;
-  color: #3a1a05; background: #f0c030;
-  border: 2px solid #3a1a05; border-radius: 10px;
-  padding: 1px 5px; line-height: 1;
-  pointer-events: none; z-index: 3;
-}
-.shape-cell { border-radius: 4px; border: 2px solid; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-
-.slot-name {
-  font-size: 11px; font-weight: 900;
-  font-family: 'Fredoka One', cursive;
-  color: #3a1a05; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.slot-sold { font-size: 11px; font-weight: 900; color: #b0a080; text-transform: uppercase; }
-.slot-cost { font-size: 15px; font-weight: 900; font-family: 'Fredoka One', cursive; color: #c8922a; }
-.slot-cost.too-expensive { color: #e03030; }

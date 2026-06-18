@@ -73,16 +73,17 @@ export function getEconomicMultiplier(tier: number): number {
   return Math.pow(1.1, tier - 1)
 }
 
-// Military damage scaling:
-// T1→T2: +30% dmg, T2→T3: no dmg change, T3→T4: +30% dmg, T4→T5: no dmg change, T5+: +5% dmg per tier
-export function getMilitaryDamageMultiplier(tier: number): number {
-  if (tier === 1) return 1.0
-  if (tier === 2) return 1.3
-  if (tier === 3) return 1.3
-  if (tier === 4) return 1.69  // 1.3 × 1.3
-  if (tier === 5) return 1.69
-  // T6+: 1.69 × 1.05^(tier-5)
-  return 1.69 * Math.pow(1.05, tier - 5)
+// Military damage scaling — per kind:
+// archer: +40% per tier · cannon/frost: +50% per tier
+const DAMAGE_RATE: Partial<Record<string, number>> = {
+  archer: 1.40,
+  cannon: 1.50,
+  frost:  1.50,
+}
+
+export function getMilitaryDamageMultiplier(tier: number, kind?: string): number {
+  const rate = (kind ? DAMAGE_RATE[kind] : undefined) ?? 1.50
+  return Math.pow(rate, tier - 1)
 }
 
 // Military range scaling:
@@ -96,7 +97,7 @@ export function getMilitaryRangeMultiplier(tier: number): number {
 
 export function getScaledDamage(item: Item): number {
   const base = item.def.damage ?? 0
-  return Math.round(base * getMilitaryDamageMultiplier(item.tier))
+  return Math.round(base * getMilitaryDamageMultiplier(item.tier, item.def.kind))
 }
 
 export function getScaledRange(item: Item): number {

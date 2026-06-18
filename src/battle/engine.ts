@@ -202,7 +202,7 @@ export function initBattle(
   const towers: BattleTower[] = []
 
   for (const { item, x, y } of deployedTowers) {
-    const damageMult = getMilitaryDamageMultiplier(item.tier)
+    const damageMult = getMilitaryDamageMultiplier(item.tier, item.def.kind)
     const rangeMult  = getMilitaryRangeMultiplier(item.tier)
     const { cols: shapeCols, rows: shapeRows } = shapeDims(item.def.size as ItemSize)
     towers.push({

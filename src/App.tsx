@@ -97,9 +97,9 @@ export default function App() {
   const [tutorial, setTutorial]       = useState<TutorialState>(getInitialTutorialState)
   const tutorialConfig = getStepConfig(tutorial.currentStep)
   const [shopSlots, setShopSlots]     = useState(() =>
-    generateShop(4, 1, tutorialConfig?.forceShopItems)  // 4 = INITIAL_SHOP_SIZE
+    generateShop(3, 1, tutorialConfig?.forceShopItems)  // 3 items per reroll
   )
-  const [shopSize, setShopSize]       = useState(4)
+  const [shopSize, setShopSize]       = useState(3)
   const [rerollCost, setRerollCost]   = useState(1)
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null)
   const [showResultPopup, setShowResultPopup] = useState(false)

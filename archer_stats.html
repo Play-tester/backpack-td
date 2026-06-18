@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archer Tower — Stat Progression</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5e6c0;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 22px;
+    color: #3a1a05;
+    margin-bottom: 6px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #7a5a30;
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards ── */
+  .cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: #fff8ec;
+    border: 3px solid #3a1a05;
+    border-radius: 14px;
+    padding: 14px 12px 12px;
+    width: 120px;
+    box-shadow: 4px 4px 0 #3a1a05;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .tier-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f0c030;
+    border: 2.5px solid #3a1a05;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 900;
+    color: #3a1a05;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+
+  .tower-icon {
+    font-size: 36px;
+    line-height: 1;
+    margin-top: 4px;
+  }
+
+  .stat-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .stat-label { color: #7a5a30; font-weight: 600; }
+  .stat-value { font-weight: 900; color: #3a1a05; }
+  .stat-value.up { color: #2a8a20; }
+
+  .bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: #e8d4a0;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #c8b070;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .bar-dmg   { background: #e03030; }
+  .bar-range { background: #4ab8c8; }
+  .bar-dps   { background: #f0a020; }
+
+  .divider { width: 100%; height: 1px; background: #d4b880; margin: 2px 0; }
+
+  .cost-row {
+    display: flex;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #3a1a05;
+  }
+  .cost-buy { color: #c8922a; }
+  .cost-sell { color: #888; }
+
+  /* ── Bar chart ── */
+  .chart-section {
+    background: #fff8ec;
+    border: 3px solid #3a1a05;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 4px 4px 0 #3a1a05;
+    margin-bottom: 24px;
+  }
+  .chart-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #3a1a05;
+    margin-bottom: 16px;
+  }
+
+  .chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 160px;
+    position: relative;
+  }
+
+  .chart-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .chart-bar-group {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    flex: 1;
+    width: 100%;
+  }
+
+  .chart-bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    min-width: 8px;
+  }
+
+  .chart-label {
+    font-size: 11px;
+    font-weight: 900;
+    color: #3a1a05;
+  }
+  .chart-val {
+    font-size: 10px;
+    color: #7a5a30;
+    font-weight: 700;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #3a1a05;
+    font-weight: 700;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* ── Merge note ── */
+  .merge-note {
+    background: #e8f0ff;
+    border: 2.5px solid #3a1a05;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #3a1a05;
+    line-height: 1.6;
+    box-shadow: 3px 3px 0 #3a1a05;
+  }
+  .merge-note strong { color: #c8922a; }
+</style>
+</head>
+<body>
+
+<h1>🏹 Archer Tower — Stat Progression</h1>
+<p class="subtitle">Base stats: 10 dmg · 2 atk/s · 115px range · 1×1 cell · 3g base cost · +40% dmg per tier</p>
+
+<!-- Tier cards -->
+<div class="cards" id="cards"></div>
+
+<!-- Bar chart -->
+<div class="chart-section">
+  <div class="chart-title">DPS vs Range by Tier</div>
+  <div class="chart" id="chart"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#e03030"></div> DPS (damage × speed)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ab8c8"></div> Range (px)</div>
+  </div>
+</div>
+
+<!-- Merge note -->
+<div class="merge-note">
+  <strong>How to reach higher tiers:</strong> drag two identical same-tier Archers onto each other in the backpack grid. T1 + T1 → T2 · T2 + T2 → T3 · and so on with no tier cap.<br>
+  <strong>DMG increases +40% every tier</strong> (T1→T2: 10→14, T3: 20, T4: 27, T5: 38, T6: 54, T7: 75). <strong>Range jumps at T3 (+10%) and T5 (+10%)</strong>, then stays fixed.
+</div>
+
+<script>
+  const tiers = [
+    { tier: 1, dmg: 10, range: 115, dps: 20,  cost: 3,   sell: 2   },
+    { tier: 2, dmg: 14, range: 115, dps: 28,  cost: 6,   sell: 5   },
+    { tier: 3, dmg: 20, range: 127, dps: 40,  cost: 13,  sell: 11  },
+    { tier: 4, dmg: 27, range: 127, dps: 54,  cost: 28,  sell: 25  },
+    { tier: 5, dmg: 38, range: 139, dps: 76,  cost: 58,  sell: 52  },
+    { tier: 6, dmg: 54, range: 139, dps: 108, cost: 123, sell: 110 },
+    { tier: 7, dmg: 75, range: 139, dps: 150, cost: 257, sell: 231 },
+  ]
+
+  const maxDmg   = Math.max(...tiers.map(t => t.dmg))
+  const maxRange = Math.max(...tiers.map(t => t.range))
+  const maxDps   = Math.max(...tiers.map(t => t.dps))
+
+  // ── Cards ──────────────────────────────────────────────────────
+  const cardsEl = document.getElementById('cards')
+  tiers.forEach((t, i) => {
+    const prev = tiers[i - 1]
+    const dmgUp   = prev && t.dmg   > prev.dmg
+    const rangeUp = prev && t.range > prev.range
+    const dpsUp   = prev && t.dps   > prev.dps
+
+    cardsEl.innerHTML += `
+      <div class="card">
+        <div class="tier-badge">Tier ${t.tier}</div>
+        <div class="tower-icon">🏹</div>
+        <div class="stat-row">
+          <div class="stat">
+            <span class="stat-label">DMG</span>
+            <span class="stat-value ${dmgUp ? 'up' : ''}">${t.dmg}${dmgUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-dmg" style="width:${(t.dmg/maxDmg*100).toFixed(1)}%"></div></div>
+
+          <div class="stat">
+            <span class="stat-label">DPS</span>
+            <span class="stat-value ${dpsUp ? 'up' : ''}">${t.dps}${dpsUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-dps" style="width:${(t.dps/maxDps*100).toFixed(1)}%"></div></div>
+
+          <div class="stat">
+            <span class="stat-label">Range</span>
+            <span class="stat-value ${rangeUp ? 'up' : ''}">${t.range}px${rangeUp ? ' ▲' : ''}</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill bar-range" style="width:${(t.range/maxRange*100).toFixed(1)}%"></div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="cost-row">
+          <span class="cost-buy">Buy ${t.cost}g</span>
+          <span class="cost-sell">Sell ${t.sell}g</span>
+        </div>
+      </div>`
+  })
+
+  // ── Chart ──────────────────────────────────────────────────────
+  const chartEl = document.getElementById('chart')
+  const chartH  = 140  // usable bar height px
+
+  tiers.forEach(t => {
+    const dpsH   = Math.round((t.dps   / maxDps)   * chartH)
+    const rangeH = Math.round((t.range / maxRange)  * chartH)
+
+    chartEl.innerHTML += `
+      <div class="chart-col">
+        <div class="chart-val">${t.dps}</div>
+        <div class="chart-bar-group" style="height:${chartH}px">
+          <div class="chart-bar bar-dmg"   style="height:${dpsH}px"></div>
+          <div class="chart-bar bar-range" style="height:${rangeH}px"></div>
+        </div>
+        <div class="chart-label">T${t.tier}</div>
+      </div>`
+  })
+</script>
+</body>
+</html>

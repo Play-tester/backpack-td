@@ -1,5 +1,6 @@
 import { createItem } from './items'
-import type { Item, ItemKind } from '../types'
+import { SHAPE_OFFSETS, shapeDims } from '../types'
+import type { Item, ItemKind, ItemSize } from '../types'
 
 export const ITEM_COSTS: Record<ItemKind, number> = {
   archer: 3,
@@ -15,6 +16,39 @@ export interface ShopSlot {
   item: Item
   cost: number
   sold: boolean
+  // position on the 4×6 shop grid (col, row) of the item's anchor cell
+  gridCol: number
+  gridRow: number
+}
+
+export const SHOP_COLS = 4
+export const SHOP_ROWS = 6
+
+/** Try to place items on the shop grid without overlap. Returns positions or null if failed. */
+function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: number }[] | null {
+  const occupied = new Set<string>()
+
+  const positions: { col: number; row: number }[] = []
+
+  for (const item of items) {
+    const offsets = SHAPE_OFFSETS[item.size]
+    const { rows: h, cols: w } = shapeDims(item.size)
+    // Collect all valid anchor positions
+    const candidates: { col: number; row: number }[] = []
+    for (let r = 0; r <= SHOP_ROWS - h; r++) {
+      for (let c = 0; c <= SHOP_COLS - w; c++) {
+        // Check if all cells of this item would be free
+        const fits = offsets.every(([dr, dc]) => !occupied.has(`${r + dr}-${c + dc}`))
+        if (fits) candidates.push({ col: c, row: r })
+      }
+    }
+    if (candidates.length === 0) return null
+    const pos = candidates[Math.floor(Math.random() * candidates.length)]
+    positions.push(pos)
+    // Mark cells occupied
+    offsets.forEach(([dr, dc]) => occupied.add(`${pos.row + dr}-${pos.col + dc}`))
+  }
+  return positions
 }
 
 let _shopId = 1
@@ -77,32 +111,52 @@ function pickTier(wave: number): number {
   return max
 }
 
-export function generateShop(count = 4, wave = 1, tutorialForceItems?: string[]): ShopSlot[] {
-  function makeSlot(kind: ItemKind, tier = 1): ShopSlot {
-    return { id: `shop_${_shopId++}`, item: createItem(kind, tier), cost: getItemCost(kind, tier), sold: false }
+export function generateShop(_count = 3, wave = 1, tutorialForceItems?: string[]): ShopSlot[] {
+  function makeItem(kind: ItemKind, tier = 1) {
+    return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
   }
+
+  let pending: { item: Item; cost: number }[]
 
   // Tutorial mode: force specific items at tier 1
   if (tutorialForceItems && tutorialForceItems.length > 0) {
-    return tutorialForceItems.map(kind => makeSlot(kind as ItemKind, 1))
+    pending = tutorialForceItems.map(kind => makeItem(kind as ItemKind, 1))
+  } else {
+    // Always generate exactly 3 items (after tutorial)
+    pending = Array.from({ length: 3 }, () => {
+      const kind = ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)]
+      return makeItem(kind, pickTier(wave))
+    })
+
+    // First 5 waves: guarantee at least one military tower (always tier 1)
+    if (wave <= 5 && !pending.some(s => (MILITARY_KINDS as string[]).includes(s.item.def.kind))) {
+      const replaceIdx   = Math.floor(Math.random() * pending.length)
+      const militaryKind = MILITARY_KINDS[Math.floor(Math.random() * MILITARY_KINDS.length)]
+      pending[replaceIdx] = makeItem(militaryKind, 1)
+    }
+
+    // Wave 10+: 35% chance to include an Academy slot (always tier 1, fixed cost)
+    if (wave >= 10 && !pending.some(s => s.item.def.kind === 'academy') && Math.random() < 0.35) {
+      pending[pending.length - 1] = makeItem('academy', 1)
+    }
   }
 
-  const slots = Array.from({ length: count }, () => {
-    const kind = ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)]
-    return makeSlot(kind, pickTier(wave))
-  })
-
-  // First 5 waves: guarantee at least one military tower (always tier 1)
-  if (wave <= 5 && !slots.some(s => (MILITARY_KINDS as string[]).includes(s.item.def.kind))) {
-    const replaceIdx   = Math.floor(Math.random() * slots.length)
-    const militaryKind = MILITARY_KINDS[Math.floor(Math.random() * MILITARY_KINDS.length)]
-    slots[replaceIdx]  = makeSlot(militaryKind, 1)
+  // Place items on the 4×6 grid — retry up to 20 times for a valid layout
+  let positions: { col: number; row: number }[] | null = null
+  for (let attempt = 0; attempt < 20 && !positions; attempt++) {
+    positions = placeItemsOnGrid(pending.map(p => ({ size: p.item.def.size as ItemSize })))
+  }
+  // Fallback: stack at top-left if placement failed
+  if (!positions) {
+    positions = pending.map((_, i) => ({ col: 0, row: i * 2 }))
   }
 
-  // Wave 10+: 35% chance to include an Academy slot (always tier 1, fixed cost)
-  if (wave >= 10 && !slots.some(s => s.item.def.kind === 'academy') && Math.random() < 0.35) {
-    slots[slots.length - 1] = makeSlot('academy', 1)
-  }
-
-  return slots
+  return pending.map((p, i) => ({
+    id:      `shop_${_shopId++}`,
+    item:    p.item,
+    cost:    p.cost,
+    sold:    false,
+    gridCol: positions![i].col,
+    gridRow: positions![i].row,
+  }))
 }
