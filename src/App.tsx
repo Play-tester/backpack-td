@@ -548,8 +548,51 @@ export default function App() {
   if (phase === 'battle-prep') {
     const showDeployInstruction = tutorial.active && tutorial.currentStep === 'deploy_and_watch' && !hasDeployedInPrep
     const unlockedHeroKinds = (Object.keys(heroProgress) as HeroKind[]).filter(k => heroProgress[k].unlocked)
+    const currentDef = selectedHero ? HERO_DEFS[selectedHero] : null
+
+    const heroPicker = unlockedHeroKinds.length > 0 ? (
+      <div className="hero-bar">
+        <button
+          className="hero-toggle-btn"
+          onClick={() => setHeroMenuOpen(o => !o)}
+        >
+          <span className="hero-btn-icon">{currentDef?.icon ?? '⚔️'}</span>
+          <span className="hero-btn-label">{currentDef ? currentDef.name : 'Hero'}</span>
+          <span className="hero-btn-caret">{heroMenuOpen ? '▲' : '▼'}</span>
+        </button>
+        {heroMenuOpen && (
+          <div className="hero-dropdown">
+            {unlockedHeroKinds.map(kind => {
+              const def = HERO_DEFS[kind]
+              return (
+                <button
+                  key={kind}
+                  className={`hero-dropdown-item${selectedHero === kind ? ' hero-dropdown-item--active' : ''}`}
+                  onClick={() => { setSelectedHero(kind); setHeroMenuOpen(false) }}
+                >
+                  <span className="hero-item-icon">{def.icon}</span>
+                  <span className="hero-item-info">
+                    <span className="hero-item-name">{def.name}</span>
+                    <span className="hero-item-desc">{def.description}</span>
+                  </span>
+                </button>
+              )
+            })}
+            {selectedHero && (
+              <button
+                className="hero-dropdown-clear"
+                onClick={() => { setSelectedHero(null); setHeroMenuOpen(false) }}
+              >
+                No hero this wave
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    ) : null
+
     return (
-      <div className="game-container" style={{ position: 'relative' }}>
+      <div className="game-container">
         <BattleDeployScreen
           placedItems={placedItems}
           buffs={buffs}
@@ -562,51 +605,8 @@ export default function App() {
             setPhase('battle')
           }}
           onDeployChange={setHasDeployedInPrep}
+          arenaOverlay={heroPicker}
         />
-        {/* Hero picker — bottom-left corner of deploy arena */}
-        {unlockedHeroKinds.length > 0 && (() => {
-          const currentDef = selectedHero ? HERO_DEFS[selectedHero] : null
-          return (
-            <div className="hero-bar hero-bar--prep">
-              <button
-                className="hero-toggle-btn"
-                onClick={() => setHeroMenuOpen(o => !o)}
-              >
-                <span className="hero-btn-icon">{currentDef?.icon ?? '⚔️'}</span>
-                <span className="hero-btn-label">{currentDef ? currentDef.name : 'Hero'}</span>
-                <span className="hero-btn-caret">{heroMenuOpen ? '▲' : '▼'}</span>
-              </button>
-              {heroMenuOpen && (
-                <div className="hero-dropdown">
-                  {unlockedHeroKinds.map(kind => {
-                    const def = HERO_DEFS[kind]
-                    return (
-                      <button
-                        key={kind}
-                        className={`hero-dropdown-item${selectedHero === kind ? ' hero-dropdown-item--active' : ''}`}
-                        onClick={() => { setSelectedHero(kind); setHeroMenuOpen(false) }}
-                      >
-                        <span className="hero-item-icon">{def.icon}</span>
-                        <span className="hero-item-info">
-                          <span className="hero-item-name">{def.name}</span>
-                          <span className="hero-item-desc">{def.description}</span>
-                        </span>
-                      </button>
-                    )
-                  })}
-                  {selectedHero && (
-                    <button
-                      className="hero-dropdown-clear"
-                      onClick={() => { setSelectedHero(null); setHeroMenuOpen(false) }}
-                    >
-                      No hero this wave
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })()}
         {showDeployInstruction && (
           <TutorialOverlay config={{ ...tutorialConfig!, instruction: 'Drag your tower and defend the base' }} battle />
         )}

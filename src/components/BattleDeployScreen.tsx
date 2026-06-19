@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { BATTLE_H, BATTLE_W, LANE_CX, LANE_W, isZigzagWave, ZIGZAG_WAYPOINTS, TRIPLE_LANE_XS, isTripleLaneWave, DIAMOND_PATH_A, DIAMOND_PATH_B, isDiamondWave, FUNNEL_PATH_A, FUNNEL_PATH_B, isFunnelWave, LONG_BATTLE_H, EXT_ZIGZAG_WAYPOINTS, isExtZigzagWave, isLongWave, type DeployedTower } from '../battle/types'
 import { KIND_RANGE } from '../battle/engine'
@@ -118,9 +118,10 @@ interface Props {
   onLaunch:         (towers: DeployedTower[]) => void
   onBack:           () => void
   onDeployChange?:  (hasDeployedTowers: boolean) => void
+  arenaOverlay?:    React.ReactNode   // rendered inside deploy-arena as absolute overlay
 }
 
-export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows, gridCols, onLaunch, onBack, onDeployChange }: Props) {
+export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows, gridCols, onLaunch, onBack, onDeployChange, arenaOverlay }: Props) {
   const militaryItems = Array.from(placedItems.values())
     .filter(p => p.item.def.category === 'military')
     .map(p => p.item)
@@ -311,6 +312,7 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
           })}
         </svg>
         </div>{/* end inner positioning div */}
+        {arenaOverlay}
       </div>
 
       {/* ── Lower section: bench + launch button ── */}

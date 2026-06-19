@@ -336,11 +336,6 @@
 .hero-btn-label { font-size: 11px; font-weight: 700; color: #3a1a05; flex: 1; text-align: left; }
 .hero-btn-caret { font-size: 9px; color: #3a1a05; opacity: 0.6; }
 
-/* Variant: battle-prep — positioned inside the deploy arena */
-.hero-bar--prep {
-  position: absolute; bottom: 60px; left: 10px; z-index: 30;
-}
-
 /* Dropdown panel — opens ABOVE the toggle button */
 .hero-dropdown {
   position: absolute; bottom: calc(100% + 6px); left: 0;
