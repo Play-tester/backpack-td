@@ -28,6 +28,7 @@ import BottomNav, { type Tab } from './components/BottomNav'
 import BaseScreen from './components/BaseScreen'
 import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
+import { HERO_DEFS, getInitialHeroProgress, type HeroKind, type HeroProgressMap } from './lib/heroes'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle'
@@ -111,6 +112,8 @@ export default function App() {
   const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
   const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
   const [showSellHint, setShowSellHint]     = useState(false)
+  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
+  const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [showFrostHint, setShowFrostHint]   = useState(false)
   const hasSeenFrost = useRef(false)
   const buffs = mergeBuffs(permBuffs, computeBuffs(buffGrants))
@@ -525,6 +528,7 @@ export default function App() {
 
   if (phase === 'battle-prep') {
     const showDeployInstruction = tutorial.active && tutorial.currentStep === 'deploy_and_watch' && !hasDeployedInPrep
+    const unlockedHeroKinds = (Object.keys(heroProgress) as HeroKind[]).filter(k => heroProgress[k].unlocked)
     return (
       <div className="game-container">
         <BattleDeployScreen
@@ -540,6 +544,23 @@ export default function App() {
           }}
           onDeployChange={setHasDeployedInPrep}
         />
+        {unlockedHeroKinds.length > 0 && (
+          <div className="hero-select-bar">
+            <span className="hero-select-label">Hero:</span>
+            {unlockedHeroKinds.map(kind => {
+              const def = HERO_DEFS[kind]
+              return (
+                <button
+                  key={kind}
+                  className={`hero-select-btn${selectedHero === kind ? ' hero-select-btn--active' : ''}`}
+                  onClick={() => setSelectedHero(selectedHero === kind ? null : kind)}
+                >
+                  {def.icon} {def.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {showDeployInstruction && (
           <TutorialOverlay config={{ ...tutorialConfig!, instruction: 'Drag your tower and defend the base' }} battle />
         )}
@@ -560,6 +581,9 @@ export default function App() {
         showResultPopup={showResultPopup} roundResult={roundResult}
         onBattleEnd={handleBattleEnd}
         onResultContinue={handleResultContinue}
+        heroProgress={heroProgress}
+        selectedHero={selectedHero}
+        onSelectHero={setSelectedHero}
       />
     )
   }
@@ -900,6 +924,7 @@ function BattlePhaseUI({
   hasAcademy, unlockedSpells,
   tutorialConfig, showResultPopup, roundResult,
   onBattleEnd, onResultContinue,
+  heroProgress, selectedHero, onSelectHero,
 }: {
   gold: number; xp: number; xpNeeded: number; baseLevel: number
   wave: number; buffs: ReturnType<typeof mergeBuffs>
@@ -910,12 +935,18 @@ function BattlePhaseUI({
   showResultPopup: boolean; roundResult: RoundResult | null
   onBattleEnd: (r: BattleResult) => void
   onResultContinue: () => void
+  heroProgress: HeroProgressMap
+  selectedHero: HeroKind | null
+  onSelectHero: (kind: HeroKind | null) => void
 }) {
   const pendingSpellRef = useRef<{ kind: string; x: number; y: number } | null>(null)
+  const pendingHeroRef  = useRef<HeroKind | null>(null)
   const battleWrapperRef = useRef<HTMLDivElement>(null)
 
   const [spellDrag, setSpellDrag] = useState<{ kind: SpellKind; clientX: number; clientY: number } | null>(null)
   const [cooldowns, setCooldowns] = useState<Partial<Record<SpellKind, number>>>({})
+  const [heroDead, setHeroDead]   = useState(false)
+  const [heroDeployed, setHeroDeployed] = useState(false)
 
   // Cooldown countdown — tick every second
   useEffect(() => {
@@ -962,6 +993,14 @@ function BattlePhaseUI({
     ? unlockedSpells.map(k => SPELL_DEFS[k])
     : []
 
+  const unlockedHeroes = (Object.keys(heroProgress) as HeroKind[]).filter(k => heroProgress[k].unlocked)
+
+  function handleDeployHero() {
+    if (!selectedHero || heroDeployed) return
+    pendingHeroRef.current = selectedHero
+    setHeroDeployed(true)
+  }
+
   return (
     <div className="game-container">
       <div
@@ -983,6 +1022,7 @@ function BattlePhaseUI({
           onBattleEnd={onBattleEnd}
           tutorialLimitEnemies={tutorialConfig?.limitEnemies}
           pendingSpellRef={pendingSpellRef}
+          pendingHeroRef={pendingHeroRef}
         />
 
         {/* Spell bar — bottom-left corner of battle canvas */}
@@ -1002,6 +1042,22 @@ function BattlePhaseUI({
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Hero bar — bottom-right corner of battle canvas */}
+        {selectedHero && (
+          <div className="hero-bar">
+            <button
+              className={`hero-deploy-btn${heroDeployed ? ' hero-deployed' : ''}`}
+              onClick={handleDeployHero}
+              disabled={heroDeployed}
+            >
+              <span className="hero-btn-icon">{HERO_DEFS[selectedHero].icon}</span>
+              <span className="hero-btn-label">
+                {heroDeployed ? (heroDead ? '💀' : 'In Battle') : 'Deploy'}
+              </span>
+            </button>
           </div>
         )}
       </div>

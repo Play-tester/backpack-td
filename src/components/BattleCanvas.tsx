@@ -8,9 +8,10 @@ import {
   DIAMOND_PATH_A, DIAMOND_PATH_B, isDiamondWave,
   FUNNEL_PATH_A, FUNNEL_PATH_B, isFunnelWave,
   EXT_ZIGZAG_WAYPOINTS, isExtZigzagWave,
-  type BattleResult, type BattleState, type BattleTower, type DeployedTower, type Enemy, type Projectile,
+  type BattleHero, type BattleResult, type BattleState, type BattleTower, type DeployedTower, type Enemy, type Projectile,
 } from '../battle/types'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
+import { HERO_DEFS, type HeroKind } from '../lib/heroes'
 import './BattleCanvas.css'
 
 interface PendingSpell { kind: string; x: number; y: number }
@@ -23,6 +24,7 @@ interface Props {
   onBattleEnd: (result: BattleResult) => void
   tutorialLimitEnemies?: number
   pendingSpellRef?: React.MutableRefObject<PendingSpell | null>
+  pendingHeroRef?: React.MutableRefObject<HeroKind | null>
 }
 
 // ── Path drawing ────────────────────────────────────────────────────────────
@@ -71,6 +73,57 @@ function drawPath(ctx: CanvasRenderingContext2D, wave: number) {
   }
 }
 
+// ── Hero drawing ─────────────────────────────────────────────────────────────
+function drawHero(ctx: CanvasRenderingContext2D, hero: BattleHero) {
+  if (hero.dead) return
+  const def = HERO_DEFS[hero.kind]
+  const HERO_R = 18  // hero circle radius
+
+  // Glow
+  ctx.save()
+  ctx.shadowColor = hero.kind === 'knight' ? '#fbbf24'
+    : hero.kind === 'ranger' ? '#4ade80'
+    : '#818cf8'
+  ctx.shadowBlur  = 16
+  ctx.fillStyle   = hero.kind === 'knight' ? '#b45309'
+    : hero.kind === 'ranger' ? '#15803d'
+    : '#4338ca'
+  ctx.beginPath()
+  ctx.arc(hero.x, hero.y, HERO_R, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.shadowBlur = 0
+  ctx.restore()
+
+  // Icon text
+  ctx.save()
+  ctx.font = '18px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(def.icon, hero.x, hero.y)
+  ctx.restore()
+
+  // HP bar
+  const barW = HERO_R * 2 + 4
+  const barX = hero.x - barW / 2
+  const barY = hero.y - HERO_R - 10
+  ctx.fillStyle = '#0d1b2a'
+  ctx.fillRect(barX, barY, barW, 5)
+  const pct = Math.max(0, hero.hp / hero.maxHp)
+  ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#fbbf24' : '#f87171'
+  ctx.fillRect(barX, barY, barW * pct, 5)
+
+  // Name label
+  ctx.save()
+  ctx.font = 'bold 9px monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.fillStyle = '#fff'
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'
+  ctx.shadowBlur = 4
+  ctx.fillText(def.name, hero.x, barY - 1)
+  ctx.restore()
+}
+
 // ── Canvas draw ─────────────────────────────────────────────────────────────
 function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: SplashEffect[], cannonHitEffects: SplashEffect[]) {
   const H = isLongWave(state.wave) ? LONG_BATTLE_H : BATTLE_H
@@ -94,6 +147,11 @@ function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: 
   // ── Enemies ────────────────────────────────────────────────────────────────
   for (const e of state.enemies) {
     drawEnemy(ctx, e, state.elapsed)
+  }
+
+  // ── Hero ───────────────────────────────────────────────────────────────────
+  if (state.hero && !state.hero.dead) {
+    drawHero(ctx, state.hero)
   }
 
   // ── Splash effects (fireball) ──────────────────────────────────────────────
@@ -389,7 +447,7 @@ const ENEMY_COLOR: Record<string, string> = {
   swarm:  '#facc15',   // yellow — tiny and fast
 }
 
-export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef }: Props) {
+export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef }: Props) {
   const canvasRef       = useRef<HTMLCanvasElement>(null)
   const scrollRef       = useRef<HTMLDivElement>(null)
   const stateRef        = useRef<BattleState>(initBattle(deployedTowers, wave, buffs, tutorialLimitEnemies))
@@ -416,6 +474,25 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
         pendingSpellRef.current = null
         stateRef.current = applySpell(stateRef.current, kind, x, y)
         splashEffects.current.push({ x, y, radius: 0, maxRadius: 80, timer: 0.5 })
+      }
+
+      // Apply hero deployment
+      if (pendingHeroRef?.current && !stateRef.current.hero) {
+        const heroKind = pendingHeroRef.current
+        pendingHeroRef.current = null
+        const def = HERO_DEFS[heroKind]
+        const heroState: BattleHero = {
+          kind:            heroKind,
+          x:               LANE_CX,
+          y:               BATTLE_H - 40,
+          hp:              def.hp,
+          maxHp:           def.hp,
+          abilityCooldown: def.ability.cooldown,
+          attackCooldown:  0,
+          stunTimer:       0,
+          dead:            false,
+        }
+        stateRef.current = { ...stateRef.current, hero: heroState }
       }
 
       const prevProjectiles = stateRef.current.projectiles

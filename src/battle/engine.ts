@@ -1,5 +1,6 @@
 import { getItemImage, getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
+import { HERO_DEFS, type HeroKind } from '../lib/heroes'
 import { shapeDims, type ItemSize } from '../types'
 import {
   BATTLE_H, LANE_CX, ZIGZAG_WAYPOINTS, isZigzagWave, isLongWave,
@@ -7,7 +8,7 @@ import {
   DIAMOND_PATH_A, DIAMOND_PATH_B, isDiamondWave,
   FUNNEL_PATH_A, FUNNEL_PATH_B, isFunnelWave,
   EXT_ZIGZAG_WAYPOINTS, isExtZigzagWave,
-  type BattlePhase, type BattleState, type BattleTower, type DeployedTower,
+  type BattleHero, type BattlePhase, type BattleState, type BattleTower, type DeployedTower,
   type Enemy, type EnemyKind, type Projectile,
 } from './types'
 
@@ -198,6 +199,7 @@ export function initBattle(
   wave:  number,
   buffs: Buffs = DEFAULT_BUFFS,
   tutorialLimitEnemies?: number,
+  heroKind?: HeroKind,
 ): BattleState {
   const towers: BattleTower[] = []
 
@@ -236,6 +238,23 @@ export function initBattle(
   }
   const spawnQueue = buildSpawnQueue(waveConfig)
 
+  // Hero initial state — spawns at bottom of the battlefield (castle bottom)
+  let hero: BattleHero | null = null
+  if (heroKind) {
+    const def = HERO_DEFS[heroKind]
+    hero = {
+      kind:            heroKind,
+      x:               LANE_CX,
+      y:               BATTLE_H - 40,
+      hp:              def.hp,
+      maxHp:           def.hp,
+      abilityCooldown: def.ability.cooldown,  // first ability fires after first cooldown
+      attackCooldown:  0,
+      stunTimer:       0,
+      dead:            false,
+    }
+  }
+
   return {
     wave,
     towers,
@@ -248,6 +267,38 @@ export function initBattle(
     result:      { kills: 0, escaped: 0, goldEarned: 0, manaEarned: 0, xpEarned: 0 },
     nextLane:        0,
     nextForkPath: 0,
+    hero,
+  }
+}
+
+// ── Hero ability helpers ──────────────────────────────────────────────────
+function applyHeroAbility(hero: BattleHero, enemies: Enemy[]): void {
+  const def = HERO_DEFS[hero.kind]
+  switch (hero.kind) {
+    case 'knight':
+      // Shield Bash — stun all enemies within 60px for 1.5s
+      for (const e of enemies) {
+        const dx = e.x - hero.x, dy = e.y - hero.y
+        if (Math.sqrt(dx * dx + dy * dy) <= 60) {
+          e.slowTimer = Math.max(e.slowTimer, 4) // treat as hard-slow with very low speed
+        }
+      }
+      break
+    case 'ranger':
+      // Volley — deal ranged damage to all enemies within attackRange
+      for (const e of enemies) {
+        const dx = e.x - hero.x, dy = e.y - hero.y
+        if (Math.sqrt(dx * dx + dy * dy) <= def.attackRange) {
+          e.hp -= def.damage * 2  // volley hits harder
+        }
+      }
+      break
+    case 'mage':
+      // Frost Nova — freeze ALL enemies on screen for 2s
+      for (const e of enemies) {
+        e.slowTimer = Math.max(e.slowTimer, 2)
+      }
+      break
   }
 }
 
@@ -301,6 +352,72 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
       ;[e.x, e.y] = posOnFunnelPath(e.pathId, e.pathDist)
     } else {
       e.y += speed
+    }
+  }
+
+  // ── Hero tick ────────────────────────────────────────────────────────────
+  let hero: BattleHero | null = prev.hero ? { ...prev.hero } : null
+  if (hero && !hero.dead) {
+    const heroDef = HERO_DEFS[hero.kind]
+
+    // Decrement cooldowns
+    hero.abilityCooldown = Math.max(0, hero.abilityCooldown - dt)
+    hero.attackCooldown  = Math.max(0, hero.attackCooldown  - dt)
+    hero.stunTimer       = Math.max(0, hero.stunTimer - dt)
+
+    // Find the closest enemy within range
+    let closestEnemy: Enemy | null = null
+    let closestDist = Infinity
+    for (const e of enemies) {
+      const dx = e.x - hero.x, dy = e.y - hero.y
+      const d  = Math.sqrt(dx * dx + dy * dy)
+      if (d < closestDist) { closestDist = d; closestEnemy = e }
+    }
+
+    const blocked = closestEnemy !== null && closestDist <= heroDef.attackRange
+
+    // Move toward enemies (upward) unless blocked by one in melee range
+    if (!blocked) {
+      hero.y -= heroDef.speed * dt   // move up (toward enemies at top of screen)
+      hero.y  = Math.max(0, hero.y)  // don't go above screen
+    }
+
+    // Block enemies that have reached the hero — stop them from advancing past
+    if (blocked) {
+      for (const e of enemies) {
+        const dx = e.x - hero.x, dy = e.y - hero.y
+        const d  = Math.sqrt(dx * dx + dy * dy)
+        if (d <= heroDef.attackRange + 10) {
+          // push enemy back to just outside hero range
+          e.pathDist -= heroDef.speed * dt  // enemy can't advance
+        }
+      }
+
+      // Hero attacks closest enemy (regular attack)
+      if (hero.attackCooldown <= 0 && closestEnemy) {
+        closestEnemy.hp    -= heroDef.damage
+        hero.attackCooldown = 1 / heroDef.attackSpeed
+      }
+    }
+
+    // Auto-ability every cooldown seconds
+    if (hero.abilityCooldown <= 0) {
+      applyHeroAbility(hero, enemies)
+      hero.abilityCooldown = heroDef.ability.cooldown
+    }
+
+    // Hero takes damage from blocked enemies (each blocked enemy deals 5 dps)
+    if (blocked) {
+      const blockedCount = enemies.filter(e => {
+        const dx = e.x - hero.x, dy = e.y - hero.y
+        return Math.sqrt(dx * dx + dy * dy) <= heroDef.attackRange + 10
+      }).length
+      hero.hp -= blockedCount * 5 * dt
+    }
+
+    if (hero.hp <= 0) {
+      hero.hp   = 0
+      hero.dead = true
     }
   }
 
@@ -416,7 +533,7 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
     result.escaped >= 2                           ? 'lost' :
     spawnQueue.length === 0 && alive.length === 0 ? 'won'  : 'fighting'
 
-  return { wave: prev.wave, towers, enemies: alive, projectiles, spawnQueue, nextSpawnAt, elapsed, phase, result, nextLane, nextForkPath }
+  return { wave: prev.wave, towers, enemies: alive, projectiles, spawnQueue, nextSpawnAt, elapsed, phase, result, nextLane, nextForkPath, hero }
 }
 
 // ── Spell cast ────────────────────────────────────────────────────────────────

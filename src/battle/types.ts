@@ -1,4 +1,5 @@
 import type { Item } from '../types'
+import type { HeroKind } from '../lib/heroes'
 
 export const BATTLE_W = 390
 export const BATTLE_H = 500
@@ -160,6 +161,19 @@ export interface BattleResult {
   xpEarned: number     // = floor(manaEarned / 3)
 }
 
+// ── Hero battle state ──────────────────────────────────────────────────────
+export interface BattleHero {
+  kind:            HeroKind
+  x:               number
+  y:               number
+  hp:              number
+  maxHp:           number
+  abilityCooldown: number   // seconds until next auto-ability
+  attackCooldown:  number   // seconds until next attack
+  stunTimer:       number   // seconds remaining stunned (from own Shield Bash)
+  dead:            boolean
+}
+
 export interface BattleState {
   wave: number
   towers: BattleTower[]
@@ -172,4 +186,5 @@ export interface BattleState {
   result: BattleResult
   nextLane:     number   // cycles through lanes for triple-lane waves
   nextForkPath: number   // alternates 0/1 for any two-fork layout (diamond, funnel…)
+  hero: BattleHero | null   // active hero, or null if none deployed
 }
