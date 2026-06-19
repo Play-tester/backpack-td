@@ -31,10 +31,20 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     label: 'Cannon',
     color: '#f97316',
     image: '/cannon_tower.png',
+    tierImages: [
+      '/cannon_tower_T1.png', // T1
+      '/cannon_tower_T2.png', // T2
+      '/cannon_tower_T3.png', // T3
+      '/cannon_tower_T4.png', // T4
+      '/cannon_tower_T5.png', // T5
+      '/cannon_tower_T6.png', // T6
+      '/cannon_tower_T7.png', // T7
+    ],
     damage: 35,
     attackSpeed: 0.5,
     range: 4,
     maxDurability: 3,
+    maxTier: 7,
   },
   frost: {
     kind: 'frost',
@@ -47,6 +57,7 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     attackSpeed: 1.1,
     range: 3,
     maxDurability: 3,
+    maxTier: 7,
   },
   bank: {
     kind: 'bank',
