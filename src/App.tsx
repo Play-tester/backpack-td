@@ -112,7 +112,7 @@ export default function App() {
   const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
   const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
   const [showSellHint, setShowSellHint]     = useState(false)
-  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
+  const [heroProgress, _setHeroProgress]    = useState<HeroProgressMap>(getInitialHeroProgress)
   const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [showFrostHint, setShowFrostHint]   = useState(false)
   const hasSeenFrost = useRef(false)
@@ -924,7 +924,7 @@ function BattlePhaseUI({
   hasAcademy, unlockedSpells,
   tutorialConfig, showResultPopup, roundResult,
   onBattleEnd, onResultContinue,
-  heroProgress, selectedHero, onSelectHero,
+  heroProgress: _heroProgress, selectedHero, onSelectHero: _onSelectHero,
 }: {
   gold: number; xp: number; xpNeeded: number; baseLevel: number
   wave: number; buffs: ReturnType<typeof mergeBuffs>
@@ -945,7 +945,7 @@ function BattlePhaseUI({
 
   const [spellDrag, setSpellDrag] = useState<{ kind: SpellKind; clientX: number; clientY: number } | null>(null)
   const [cooldowns, setCooldowns] = useState<Partial<Record<SpellKind, number>>>({})
-  const [heroDead, setHeroDead]   = useState(false)
+  const [heroDead, _setHeroDead]  = useState(false)
   const [heroDeployed, setHeroDeployed] = useState(false)
 
   // Cooldown countdown — tick every second
@@ -992,8 +992,6 @@ function BattlePhaseUI({
   const availableSpells = hasAcademy
     ? unlockedSpells.map(k => SPELL_DEFS[k])
     : []
-
-  const unlockedHeroes = (Object.keys(heroProgress) as HeroKind[]).filter(k => heroProgress[k].unlocked)
 
   function handleDeployHero() {
     if (!selectedHero || heroDeployed) return

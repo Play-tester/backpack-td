@@ -116,8 +116,8 @@ export type HeroProgressMap = Record<HeroKind, HeroProgress>
 
 export function getInitialHeroProgress(): HeroProgressMap {
   return {
-    knight: { shards: 0, unlocked: false },
-    ranger: { shards: 0, unlocked: false },
-    mage:   { shards: 0, unlocked: false },
+    knight: { shards: 10, unlocked: true },   // TODO: lock behind shard system
+    ranger: { shards: 10, unlocked: true },
+    mage:   { shards: 10, unlocked: true },
   }
 }
