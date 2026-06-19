@@ -21,7 +21,7 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     damage: 10,
     attackSpeed: 2,
     range: 3,
-    maxDurability: 3,
+
     maxTier: 7,
   },
   cannon: {
@@ -43,7 +43,7 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     damage: 35,
     attackSpeed: 0.5,
     range: 4,
-    maxDurability: 3,
+
     maxTier: 7,
   },
   frost: {
@@ -65,7 +65,7 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     damage: 5,
     attackSpeed: 1.1,
     range: 3,
-    maxDurability: 3,
+
     maxTier: 7,
   },
   bank: {

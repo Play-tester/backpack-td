@@ -289,24 +289,10 @@ export default function App() {
   function handleBattleEnd(result: BattleResult) {
     const won = result.escaped <= 1
 
-    // 1. Durability loss + remove broken items (only on win)
+    // 1. No durability system — towers don't break
     const newPlaced = new Map(placedItems)
-    let   newGrid   = grid
+    const newGrid   = grid
     const brokenLabels: string[] = []
-
-    if (won) {
-      for (const [id, placed] of placedItems) {
-        if (placed.item.def.category !== 'military') continue
-        const newDur = (placed.item.durability ?? 1) - 1
-        if (newDur <= 0) {
-          brokenLabels.push(placed.item.def.label + (placed.item.tier >= 2 ? ` ${placed.item.tier}` : ''))
-          newGrid = removeItem(newGrid, id)
-          newPlaced.delete(id)
-        } else {
-          newPlaced.set(id, { ...placed, item: { ...placed.item, durability: newDur } })
-        }
-      }
-    }
 
     setGrid(newGrid)
     setPlacedItems(newPlaced)
@@ -324,7 +310,8 @@ export default function App() {
         ecoGold += Math.round(getScaledGold(item) * buffs.ecoBonus * ecoMult * aura)
       }
     }
-    const totalGoldEarned = Math.max(1, result.goldEarned + ecoGold + baseGold)
+    const killGold = Math.round(result.goldEarned * buffs.killGoldBonus)
+    const totalGoldEarned = Math.max(1, killGold + ecoGold + baseGold)
     setGold(g => g + totalGoldEarned)
 
     // 3. Mana → castle support (temporary buffs, reduced by 50% on loss)
@@ -357,7 +344,8 @@ export default function App() {
     if (newBaseLevel > baseLevel) {
       setBaseLevel(newBaseLevel)
       const isGridMaxed = gridCols >= MAX_GRID_COLS && gridRows >= MAX_GRID_ROWS
-      setPendingBaseLevel({ toLevel: newBaseLevel, choices: pickThreeBasePerks(newBaseLevel, isGridMaxed) })
+      const isShopMaxed = shopSize >= 6
+      setPendingBaseLevel({ toLevel: newBaseLevel, choices: pickThreeBasePerks(newBaseLevel, isGridMaxed, isShopMaxed) })
     }
 
     // 4. Tick down temporary buff grants (regardless of win/loss)
@@ -396,9 +384,6 @@ export default function App() {
       nextTutorialStep = 'introduce_shop'
       setTutorial({ active: true, currentStep: 'introduce_shop' })
     } else if (tutorial.active && tutorial.currentStep === 'introduce_info_icon' && won) {
-      nextTutorialStep = 'introduce_durability'
-      setTutorial({ active: true, currentStep: 'introduce_durability' })
-    } else if (tutorial.active && tutorial.currentStep === 'introduce_durability') {
       nextTutorialStep = 'complete'
       setTutorial({ active: false, currentStep: 'complete' })
     }
@@ -410,7 +395,7 @@ export default function App() {
     setShopSlots(newSlots)
     setRerollCost(1)
     if (won) setWave(nextWave)
-    if (won && wave === 4) setShowSellHint(true)
+    if (won && wave === 5) setShowSellHint(true)
     if (!hasSeenFrost.current && newSlots.some(s => s.item.def.kind === 'frost')) {
       hasSeenFrost.current = true
       setShowFrostHint(true)
@@ -455,18 +440,6 @@ export default function App() {
   function applyUpgrade(upgrade: Upgrade) {
     if (INSTANT_UPGRADES.has(upgrade.kind)) {
       // One-time effects
-      if (upgrade.kind === 'forged_steel') {
-        setPlacedItems(prev => {
-          const next = new Map(prev)
-          for (const [id, placed] of prev) {
-            if (placed.item.def.category === 'military') {
-              const maxDur = (placed.item.def.maxDurability ?? 3) + 1
-              next.set(id, { ...placed, item: { ...placed.item, durability: maxDur } })
-            }
-          }
-          return next
-        })
-      }
       if (upgrade.kind === 'gold_now') setGold(g => g + 15)
     } else {
       // Temporary buff — lasts 3 waves
@@ -638,7 +611,7 @@ export default function App() {
         musicVolume={musicVolume} onMusicVolumeChange={setMusicVolume}
         onInfoIconTap={() => {
           if (tutorial.active && tutorial.currentStep === 'introduce_info_icon') {
-            setTutorial({ active: true, currentStep: 'introduce_durability' })
+            setTutorial({ active: false, currentStep: 'complete' })
           }
         }}
         onStartBattle={() => {

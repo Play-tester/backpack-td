@@ -16,6 +16,7 @@ export interface Buffs {
   rangeBonus:       number
   extraBaseIncome:  number   // flat gold added to BASE_INCOME each round
   ecoBonus:         number   // multiplier on economic item gold
+  killGoldBonus:    number   // multiplier on gold earned from kills
 }
 
 export const DEFAULT_BUFFS: Buffs = {
@@ -24,6 +25,7 @@ export const DEFAULT_BUFFS: Buffs = {
   rangeBonus:      1.0,
   extraBaseIncome: 0,
   ecoBonus:        1.0,
+  killGoldBonus:   1.0,
 }
 
 // ── Upgrade pool ──────────────────────────────────────────────────────────
@@ -33,11 +35,13 @@ export type UpgradeKind =
   | 'range_up'
   | 'tax_collector'
   | 'market_boom'
-  | 'forged_steel'
+  | 'looting_frenzy'
+  | 'overclock'
+  | 'sniper_mode'
   | 'gold_now'
 
 // Whether the upgrade is a temporary buff (tracked per grant) or instant
-export const INSTANT_UPGRADES: Set<UpgradeKind> = new Set(['forged_steel', 'gold_now'])
+export const INSTANT_UPGRADES: Set<UpgradeKind> = new Set(['gold_now'])
 
 export interface Upgrade {
   kind:        UpgradeKind
@@ -78,10 +82,22 @@ export const ALL_UPGRADES: Upgrade[] = [
     icon: '📈',
   },
   {
-    kind: 'forged_steel',
-    title: 'Forged Steel',
-    description: 'Restore all items to max durability (+1)',
-    icon: '🔨',
+    kind: 'looting_frenzy',
+    title: 'Looting Frenzy',
+    description: 'Enemies drop +50% gold · lasts 3 waves',
+    icon: '💸',
+  },
+  {
+    kind: 'overclock',
+    title: 'Overclock',
+    description: 'Towers attack 25% faster but deal 25% less damage · lasts 3 waves',
+    icon: '⏩',
+  },
+  {
+    kind: 'sniper_mode',
+    title: 'Sniper Mode',
+    description: 'Towers gain +50% range but attack 15% slower · lasts 3 waves',
+    icon: '🎯',
   },
   {
     kind: 'gold_now',
@@ -106,11 +122,14 @@ export function computeBuffs(grants: BuffGrant[]): Buffs {
   const b = { ...DEFAULT_BUFFS }
   for (const { upgrade } of grants) {
     switch (upgrade.kind) {
-      case 'damage_up':     b.damageBonus     *= 1.125; break
-      case 'speed_up':      b.speedBonus      *= 1.10;  break
-      case 'range_up':      b.rangeBonus      *= 1.125; break
-      case 'tax_collector': b.extraBaseIncome += 2;     break
-      case 'market_boom':   b.ecoBonus        *= 1.20;  break
+      case 'damage_up':      b.damageBonus     *= 1.125; break
+      case 'speed_up':       b.speedBonus      *= 1.10;  break
+      case 'range_up':       b.rangeBonus      *= 1.125; break
+      case 'tax_collector':  b.extraBaseIncome += 2;     break
+      case 'market_boom':    b.ecoBonus        *= 1.20;  break
+      case 'looting_frenzy': b.killGoldBonus   *= 1.50;  break
+      case 'overclock':      b.speedBonus      *= 1.25;  b.damageBonus *= 0.75; break
+      case 'sniper_mode':    b.rangeBonus      *= 1.50;  b.speedBonus  *= 0.85; break
     }
   }
   return b
@@ -155,7 +174,7 @@ export const ALL_BASE_PERKS: BasePerk[] = [
   {
     kind: 'perm_income',
     title: 'Treasury',
-    description: '+1g base income per battle (permanent)',
+    description: '+5g base income per battle (permanent)',
     icon: '💎',
   },
   {
@@ -173,16 +192,18 @@ export const ALL_BASE_PERKS: BasePerk[] = [
   {
     kind: 'expand_shop',
     title: 'Market Stall',
-    description: 'Add 1 extra slot to the Shop (permanent)',
+    description: 'Add 1 extra item to the Shop each reroll, up to 6 (permanent)',
     icon: '🏪',
   },
 ]
 
-export function pickThreeBasePerks(toLevel: number, isGridMaxed: boolean = false): [BasePerk, BasePerk, BasePerk] {
-  // Filter out unlock_cell if grid is already maxed
-  const availablePerks = isGridMaxed
-    ? ALL_BASE_PERKS.filter(p => p.kind !== 'unlock_cell')
-    : ALL_BASE_PERKS
+export function pickThreeBasePerks(toLevel: number, isGridMaxed: boolean = false, isShopMaxed: boolean = false): [BasePerk, BasePerk, BasePerk] {
+  // Filter out perks that are no longer available
+  const availablePerks = ALL_BASE_PERKS.filter(p => {
+    if (p.kind === 'unlock_cell' && isGridMaxed) return false
+    if (p.kind === 'expand_shop' && isShopMaxed) return false
+    return true
+  })
 
   // First base level-up (toLevel === 2): guarantee unlock_cell appears (unless maxed)
   if (toLevel === 2 && !isGridMaxed) {
@@ -202,7 +223,7 @@ export function applyBasePerk(perks: Buffs, kind: BasePerkKind): Buffs {
     case 'perm_damage': return { ...perks, damageBonus:     perks.damageBonus     * 1.05 }
     case 'perm_speed':  return { ...perks, speedBonus:      perks.speedBonus      * 1.05 }
     case 'perm_range':  return { ...perks, rangeBonus:      perks.rangeBonus      * 1.05 }
-    case 'perm_income': return { ...perks, extraBaseIncome: perks.extraBaseIncome + 1    }
+    case 'perm_income': return { ...perks, extraBaseIncome: perks.extraBaseIncome + 5    }
     case 'perm_eco':    return { ...perks, ecoBonus:        perks.ecoBonus        * 1.10 }
     default:            return perks
   }
@@ -216,5 +237,6 @@ export function mergeBuffs(perm: Buffs, temp: Buffs): Buffs {
     rangeBonus:      perm.rangeBonus      * temp.rangeBonus,
     extraBaseIncome: perm.extraBaseIncome + temp.extraBaseIncome,
     ecoBonus:        perm.ecoBonus        * temp.ecoBonus,
+    killGoldBonus:   perm.killGoldBonus   * temp.killGoldBonus,
   }
 }

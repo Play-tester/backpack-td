@@ -266,17 +266,6 @@ function PlacedItemView({
         {!getItemImage(item) && <span className="item-label">{item.def.label}</span>}
       </div>
 
-      {/* Durability bar (military items only) */}
-      {item.def.category === 'military' && item.durability !== undefined && (
-        <div className="item-durability-bar">
-          <div
-            className="item-durability-fill"
-            style={{
-              width: `${((item.durability ?? 0) / (item.def.maxDurability ?? 3)) * 100}%`
-            }}
-          />
-        </div>
-      )}
 
       {/* Tier number in bottom-right */}
       {tierDisplay && (

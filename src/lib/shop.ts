@@ -62,7 +62,7 @@ export function getItemCost(kind: ItemKind, tier: number): number {
 
 /** Sell-back price (90% of purchase cost) */
 export function getSellPrice(kind: ItemKind, tier: number): number {
-  return Math.floor(getItemCost(kind, tier) * 0.9)
+  return Math.floor(getItemCost(kind, tier) * 0.8)
 }
 
 // ── Tier availability ──────────────────────────────────────────────────────
@@ -111,7 +111,10 @@ function pickTier(wave: number): number {
   return max
 }
 
-export function generateShop(_count = 3, wave = 1, tutorialForceItems?: string[]): ShopSlot[] {
+export const MAX_SHOP_ITEMS = 6
+
+export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[]): ShopSlot[] {
+  const itemCount = Math.min(count, MAX_SHOP_ITEMS)
   function makeItem(kind: ItemKind, tier = 1) {
     return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
   }
@@ -122,8 +125,7 @@ export function generateShop(_count = 3, wave = 1, tutorialForceItems?: string[]
   if (tutorialForceItems && tutorialForceItems.length > 0) {
     pending = tutorialForceItems.map(kind => makeItem(kind as ItemKind, 1))
   } else {
-    // Always generate exactly 3 items (after tutorial)
-    pending = Array.from({ length: 3 }, () => {
+    pending = Array.from({ length: itemCount }, () => {
       const kind = ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)]
       return makeItem(kind, pickTier(wave))
     })
