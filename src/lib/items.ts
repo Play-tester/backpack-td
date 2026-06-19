@@ -53,6 +53,15 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     label: 'Frost',
     color: '#38bdf8',
     image: '/frost_tower.png',
+    tierImages: [
+      '/frost_tower_T1.png', // T1
+      '/frost_tower_T2.png', // T2
+      '/frost_tower_T3.png', // T3
+      '/frost_tower_T4.png', // T4
+      '/frost_tower_T5.png', // T5
+      '/frost_tower_T6.png', // T6
+      '/frost_tower_T7.png', // T7
+    ],
     damage: 5,
     attackSpeed: 1.1,
     range: 3,
