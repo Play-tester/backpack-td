@@ -336,6 +336,11 @@
 .hero-btn-label { font-size: 11px; font-weight: 700; color: #3a1a05; flex: 1; text-align: left; }
 .hero-btn-caret { font-size: 9px; color: #3a1a05; opacity: 0.6; }
 
+/* Variant: battle-prep — positioned inside the deploy arena */
+.hero-bar--prep {
+  position: absolute; bottom: 60px; left: 10px; z-index: 30;
+}
+
 /* Dropdown panel — opens ABOVE the toggle button */
 .hero-dropdown {
   position: absolute; bottom: calc(100% + 6px); left: 0;
@@ -381,6 +386,17 @@
 .hero-deploy-btn:active:not(:disabled) { opacity: 0.85; }
 .hero-deploy-btn--disabled,
 .hero-deploy-btn:disabled { opacity: 0.45; cursor: default; background: #7a5228; }
+
+/* Clear / no-hero button in prep dropdown */
+.hero-dropdown-clear {
+  margin-top: 2px; padding: 6px 12px;
+  border-radius: 8px;
+  background: transparent; color: #7a5228;
+  border: 1px dashed #7a5228;
+  font-family: inherit; font-size: 11px;
+  cursor: pointer; text-align: center;
+}
+.hero-dropdown-clear:hover { background: #f0ddb0; }
 
 /* ── Spell drag ghost ── */
 .spell-drag-ghost {
