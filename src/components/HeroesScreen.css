@@ -1,0 +1,183 @@
+/* ── Heroes Screen ─────────────────────────────────────────────────────── */
+.heroes-screen {
+  flex: 1; min-height: 0; overflow-y: auto;
+  background: #f5e6c0;
+  padding: 12px 12px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.heroes-title {
+  font-size: 20px; font-weight: 900; color: #3a1a05;
+  font-family: 'Fredoka One', cursive;
+  margin: 0; text-align: center;
+}
+.heroes-subtitle {
+  font-size: 11px; color: #7a5228; text-align: center;
+  margin: 0;
+}
+
+/* ── Hero grid — 3 cards per row ── */
+.heroes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* ── Hero card ── */
+.hero-card {
+  background: #fdf5e8;
+  border: 3px solid #3a1a05;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #3a1a05;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 10px 6px 8px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #3a1a05; }
+.hero-card--tapped { border-color: #f0c030; box-shadow: 3px 3px 0 #f0c030; }
+.hero-card--unknown { opacity: 0.6; }
+
+/* Portrait area */
+.hero-card-portrait {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #e8d4a8;
+  border: 2px solid #3a1a05;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hero-card--unlocked   .hero-card-portrait { background: #3a1a05; }
+.hero-card--seen       .hero-card-portrait { background: #2a2a3a; }
+.hero-card--unknown    .hero-card-portrait { background: #888; }
+
+.hero-card-icon       { font-size: 30px; }
+.hero-card-silhouette { font-size: 30px; filter: brightness(0) invert(0.15); }
+.hero-card-unknown    { font-size: 28px; color: #ccc; font-weight: 900; }
+
+.hero-card-name {
+  font-size: 11px; font-weight: 700; color: #3a1a05;
+  font-family: 'Fredoka One', cursive;
+  text-align: center;
+}
+
+/* Shard bar */
+.hero-card-shards {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.shard-bar-track {
+  width: 100%; height: 6px;
+  background: #d4b896; border-radius: 3px; overflow: hidden;
+}
+.shard-bar-track--large { height: 10px; border-radius: 5px; }
+.shard-bar-fill {
+  height: 100%; background: #f0c030;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.shard-bar-label {
+  font-size: 9px; color: #7a5228; font-weight: 600; text-align: center;
+}
+
+/* Info button */
+.hero-card-info-btn {
+  position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+  padding: 3px 14px;
+  background: #3a1a05; color: #f5e6c0;
+  border: 2px solid #3a1a05; border-radius: 8px;
+  font-family: 'Fredoka One', cursive; font-size: 11px;
+  cursor: pointer; white-space: nowrap; z-index: 5;
+  box-shadow: 2px 2px 0 #7a5228;
+}
+
+/* ── Hero info popup ── */
+.hero-popup-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(30, 12, 2, 0.72);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.hero-popup {
+  background: #f5e6c0;
+  border: 3px solid #3a1a05;
+  border-radius: 18px 18px 0 0;
+  width: 100%; max-width: 420px;
+  padding: 20px 20px 32px;
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative;
+  max-height: 88vh; overflow-y: auto;
+}
+.hero-popup-close {
+  position: absolute; top: 12px; right: 14px;
+  background: transparent; border: none;
+  font-size: 18px; color: #3a1a05; cursor: pointer;
+  font-weight: 900; line-height: 1;
+}
+
+/* Big portrait */
+.hero-popup-portrait {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: #3a1a05;
+  border: 3px solid #3a1a05;
+  display: flex; align-items: center; justify-content: center;
+  align-self: center;
+  box-shadow: 4px 4px 0 #7a5228;
+}
+.hero-popup-icon       { font-size: 52px; }
+.hero-popup-silhouette { font-size: 52px; filter: brightness(0) invert(0.2); }
+
+.hero-popup-name {
+  font-size: 22px; font-weight: 900; color: #3a1a05;
+  font-family: 'Fredoka One', cursive;
+  margin: 0; text-align: center;
+}
+.hero-popup-bio {
+  font-size: 12px; color: #5a3a18; line-height: 1.5;
+  margin: 0; text-align: center;
+}
+
+/* Stats grid */
+.hero-popup-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #fdf5e8; border: 2px solid #d4b896;
+  border-radius: 10px; padding: 10px 12px;
+}
+.hero-stat {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 4px;
+}
+.hero-stat-label { font-size: 10px; color: #7a5228; font-weight: 600; }
+.hero-stat-value { font-size: 11px; color: #3a1a05; font-weight: 700; }
+
+/* Ability box */
+.hero-popup-ability {
+  background: #e8d4a8; border: 2px solid #c4a060;
+  border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.ability-label { font-size: 11px; font-weight: 700; color: #3a1a05; }
+.ability-desc  { font-size: 11px; color: #5a3a18; line-height: 1.4; }
+.ability-cd    { font-size: 10px; color: #7a5228; }
+
+/* Popup shard bar */
+.hero-popup-shards {
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+/* Upgrade button */
+.hero-popup-upgrade {
+  padding: 12px;
+  border-radius: 10px;
+  background: #3a1a05; color: #f5e6c0;
+  border: 3px solid #3a1a05;
+  font-family: 'Fredoka One', cursive; font-size: 15px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #7a5228;
+}
+.hero-popup-upgrade:active:not(:disabled) { box-shadow: 1px 1px 0 #7a5228; transform: translate(2px,2px); }
+.hero-popup-upgrade--locked {
+  background: #b0906a; border-color: #7a5228; cursor: default; opacity: 0.7;
+}

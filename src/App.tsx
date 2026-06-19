@@ -28,7 +28,8 @@ import BottomNav, { type Tab } from './components/BottomNav'
 import BaseScreen from './components/BaseScreen'
 import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
-import { HERO_DEFS, getInitialHeroProgress, type HeroKind, type HeroProgressMap } from './lib/heroes'
+import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, type HeroKind, type HeroProgressMap } from './lib/heroes'
+import HeroesScreen from './components/HeroesScreen'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle'
@@ -112,7 +113,7 @@ export default function App() {
   const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
   const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
   const [showSellHint, setShowSellHint]     = useState(false)
-  const [heroProgress, _setHeroProgress]    = useState<HeroProgressMap>(getInitialHeroProgress)
+  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
   const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [heroMenuOpen, setHeroMenuOpen]     = useState(false)
   const [showFrostHint, setShowFrostHint]   = useState(false)
@@ -642,7 +643,7 @@ export default function App() {
           baseLevel={baseLevel} xp={xp} xpNeeded={xpNeeded}
           permBuffs={permBuffs} pickedBasePerks={pickedBasePerks}
         />
-        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} onTabChange={setActiveTab} />
+        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -658,7 +659,17 @@ export default function App() {
           wave={wave}
           onUnlockSpell={handleUnlockSpell}
         />
-        <BottomNav activeTab="academy" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} onTabChange={setActiveTab} />
+        <BottomNav activeTab="academy" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
+      </div>
+    )
+  }
+
+  // ── Heroes tab ────────────────────────────────────────────────────────────
+  if (activeTab === 'heroes') {
+    return (
+      <div className="game-container">
+        <HeroesScreen heroProgress={heroProgress} />
+        <BottomNav activeTab="heroes" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -675,7 +686,7 @@ export default function App() {
         cellSize={cellSize} onCellSizeChange={setCellSize}
         gridCols={gridCols} gridRows={gridRows} unlockedCells={unlockedCells}
         tutorialConfig={tutorialConfig}
-        activeTab={activeTab} onTabChange={setActiveTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0}
+        activeTab={activeTab} onTabChange={setActiveTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} heroProgress={heroProgress}
         showSellHint={showSellHint} onDismissSellHint={() => setShowSellHint(false)}
         showFrostHint={showFrostHint} onDismissFrostHint={() => setShowFrostHint(false)}
         musicVolume={musicVolume} onMusicVolumeChange={setMusicVolume}
@@ -708,7 +719,7 @@ function TradeUI({
   grid, placedItems, shopSlots,
   gridRef, roundResult, buffGrants, pendingLvlUp, pendingBaseLevel, rerollCost,
   cellSize, onCellSizeChange, gridCols, gridRows, unlockedCells, tutorialConfig,
-  activeTab, onTabChange, hasAcademy, hasBasePerks,
+  activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, heroProgress,
   showSellHint, onDismissSellHint,
   showFrostHint, onDismissFrostHint,
   musicVolume, onMusicVolumeChange,
@@ -724,7 +735,7 @@ function TradeUI({
   cellSize: number; onCellSizeChange: (cs: number) => void
   gridCols: number; gridRows: number; unlockedCells: number
   tutorialConfig: ReturnType<typeof getStepConfig>
-  activeTab: Tab; onTabChange: (t: Tab) => void; hasAcademy: boolean; hasBasePerks: boolean
+  activeTab: Tab; onTabChange: (t: Tab) => void; hasAcademy: boolean; hasBasePerks: boolean; hasHeroes: boolean; heroProgress: HeroProgressMap
   showSellHint: boolean; onDismissSellHint: () => void
   showFrostHint: boolean; onDismissFrostHint: () => void
   musicVolume: number; onMusicVolumeChange: (v: number) => void
@@ -909,7 +920,7 @@ function TradeUI({
         </div>
       )}
 
-      <BottomNav activeTab={activeTab} hasAcademy={hasAcademy} hasBasePerks={hasBasePerks} onTabChange={onTabChange} />
+      <BottomNav activeTab={activeTab} hasAcademy={hasAcademy} hasBasePerks={hasBasePerks} hasHeroes={hasHeroes} onTabChange={onTabChange} />
 
       {/* ── Sell confirmation modal ── */}
       {pendingSell && (

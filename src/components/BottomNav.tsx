@@ -1,15 +1,16 @@
 import './BottomNav.css'
 
-export type Tab = 'battle' | 'base' | 'academy'
+export type Tab = 'battle' | 'base' | 'academy' | 'heroes'
 
 interface Props {
   activeTab: Tab
   hasBasePerks: boolean
   hasAcademy: boolean
+  hasHeroes: boolean
   onTabChange: (tab: Tab) => void
 }
 
-export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, onTabChange }: Props) {
+export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHeroes, onTabChange }: Props) {
   const baseUnlocked    = hasBasePerks
   const academyUnlocked = hasAcademy
 
@@ -19,9 +20,14 @@ export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, onTabCh
         <span className="nav-icon">🔒</span>
         <span className="nav-label">Crafting</span>
       </button>
-      <button className="nav-btn nav-locked" disabled>
-        <span className="nav-icon">🔒</span>
+      <button
+        className={`nav-btn${activeTab === 'heroes' ? ' nav-active' : ''}${!hasHeroes ? ' nav-locked' : ''}`}
+        onClick={() => hasHeroes && onTabChange('heroes')}
+        disabled={!hasHeroes}
+      >
+        <span className="nav-icon">🦸</span>
         <span className="nav-label">Heroes</span>
+        {!hasHeroes && <span className="nav-lock-badge">🔒</span>}
       </button>
       <button
         className={`nav-btn nav-btn-battle${activeTab === 'battle' ? ' nav-active' : ''}`}

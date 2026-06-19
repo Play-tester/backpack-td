@@ -7,6 +7,7 @@ export interface HeroDef {
   name:          string
   icon:          string
   description:   string
+  bio:           string    // lore paragraph shown in hero info popup
   hp:            number    // base HP
   damage:        number    // base damage per attack
   attackSpeed:   number    // attacks/s
@@ -26,6 +27,7 @@ export const HERO_DEFS: Record<HeroKind, HeroDef> = {
     name:          'Knight',
     icon:          '⚔️',
     description:   'Melee tank who charges up the path and stuns nearby enemies',
+    bio:           'A veteran of a hundred sieges, the Knight has never once retreated. Clad in castle-forged plate, he marches straight into the enemy horde, shield raised, buying precious seconds for the towers to fire. His Shield Bash sends attackers flying — or simply puts them to sleep long enough to matter.',
     hp:            300,
     damage:        40,
     attackSpeed:   1.0,
@@ -43,6 +45,7 @@ export const HERO_DEFS: Record<HeroKind, HeroDef> = {
     name:          'Ranger',
     icon:          '🏹',
     description:   'Ranged fighter who shoots enemies along the path',
+    bio:           'Raised in the borderwood, the Ranger learned to hunt before she could read. Her arrows find gaps in armour that no tower projectile can reach. When outnumbered she looses a Volley that blankets the whole lane — a brief, beautiful storm of fletched shafts that leaves the path clear.',
     hp:            180,
     damage:        25,
     attackSpeed:   1.5,
@@ -60,6 +63,7 @@ export const HERO_DEFS: Record<HeroKind, HeroDef> = {
     name:          'Mage',
     icon:          '🧙',
     description:   'AoE spellcaster who freezes all enemies on screen',
+    bio:           'The Mage spent decades studying cold-weather conjuration in the northern academies. Frail in body but devastating in effect, a single Frost Nova from her staff can lock every enemy on the field in ice simultaneously — turning a losing battle into a killing ground in an instant.',
     hp:            140,
     damage:        20,
     attackSpeed:   0.8,
@@ -116,8 +120,26 @@ export type HeroProgressMap = Record<HeroKind, HeroProgress>
 
 export function getInitialHeroProgress(): HeroProgressMap {
   return {
-    knight: { shards: 10, unlocked: true },   // TODO: lock behind shard system
-    ranger: { shards: 10, unlocked: true },
-    mage:   { shards: 10, unlocked: true },
+    knight: { shards: 0, unlocked: false },
+    ranger: { shards: 0, unlocked: false },
+    mage:   { shards: 0, unlocked: false },
   }
+}
+
+/** Award shards and auto-unlock when threshold reached */
+export function awardShards(
+  progress: HeroProgressMap,
+  kind: HeroKind,
+  count: number,
+): HeroProgressMap {
+  const prev = progress[kind]
+  const newShards = prev.shards + count
+  const def = HERO_DEFS[kind]
+  const unlocked = prev.unlocked || newShards >= def.shardsToUnlock
+  return { ...progress, [kind]: { shards: newShards, unlocked } }
+}
+
+/** Returns true if any hero has at least 1 shard */
+export function hasAnyShards(progress: HeroProgressMap): boolean {
+  return Object.values(progress).some(p => p.shards > 0)
 }
