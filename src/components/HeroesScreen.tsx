@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ALL_HEROES, HERO_DEFS, type HeroDef, type HeroKind, type HeroProgressMap } from '../lib/heroes'
+import { ALL_HEROES, HERO_DEFS, type HeroKind, type HeroProgressMap } from '../lib/heroes'
 import './HeroesScreen.css'
 
 interface Props {

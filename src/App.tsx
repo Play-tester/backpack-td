@@ -113,7 +113,7 @@ export default function App() {
   const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
   const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
   const [showSellHint, setShowSellHint]     = useState(false)
-  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
+  const [heroProgress, _setHeroProgress]    = useState<HeroProgressMap>(getInitialHeroProgress)
   const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [heroMenuOpen, setHeroMenuOpen]     = useState(false)
   const [showFrostHint, setShowFrostHint]   = useState(false)
@@ -719,7 +719,7 @@ function TradeUI({
   grid, placedItems, shopSlots,
   gridRef, roundResult, buffGrants, pendingLvlUp, pendingBaseLevel, rerollCost,
   cellSize, onCellSizeChange, gridCols, gridRows, unlockedCells, tutorialConfig,
-  activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, heroProgress,
+  activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, heroProgress: _heroProgress,
   showSellHint, onDismissSellHint,
   showFrostHint, onDismissFrostHint,
   musicVolume, onMusicVolumeChange,
