@@ -143,3 +143,28 @@ export function awardShards(
 export function hasAnyShards(progress: HeroProgressMap): boolean {
   return Object.values(progress).some(p => p.shards > 0)
 }
+
+// Unlock order — Knight first, then Ranger, then Mage
+const HERO_UNLOCK_ORDER: HeroKind[] = ['knight', 'ranger', 'mage']
+
+/**
+ * Pick which hero receives a shard drop.
+ * The earliest locked hero gets 70% of the weight; the others share the rest.
+ * Once all heroes are unlocked every hero gets equal weight (overflow shards).
+ */
+export function pickShardDrop(progress: HeroProgressMap): HeroKind {
+  // Find the first hero in unlock order that isn't unlocked yet
+  const priorityHero = HERO_UNLOCK_ORDER.find(k => !progress[k].unlocked)
+
+  if (!priorityHero) {
+    // All unlocked — equal chance (overflow shards, future use)
+    return HERO_UNLOCK_ORDER[Math.floor(Math.random() * HERO_UNLOCK_ORDER.length)]
+  }
+
+  // 70% chance for priority hero, 30% split among the rest
+  const others = HERO_UNLOCK_ORDER.filter(k => k !== priorityHero)
+  const roll = Math.random()
+  if (roll < 0.70) return priorityHero
+  // pick randomly from the other two
+  return others[Math.floor(Math.random() * others.length)]
+}

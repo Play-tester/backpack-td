@@ -28,7 +28,7 @@ import BottomNav, { type Tab } from './components/BottomNav'
 import BaseScreen from './components/BaseScreen'
 import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
-import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, type HeroKind, type HeroProgressMap } from './lib/heroes'
+import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
 
 // ── Local types ────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ export default function App() {
   const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
   const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
   const [showSellHint, setShowSellHint]     = useState(false)
-  const [heroProgress, _setHeroProgress]    = useState<HeroProgressMap>(getInitialHeroProgress)
+  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
   const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [heroMenuOpen, setHeroMenuOpen]     = useState(false)
   const [showFrostHint, setShowFrostHint]   = useState(false)
@@ -409,6 +409,13 @@ export default function App() {
     } else if (tutorial.active && tutorial.currentStep === 'introduce_info_icon' && won) {
       nextTutorialStep = 'complete'
       setTutorial({ active: false, currentStep: 'complete' })
+      // Tutorial complete — award first shard (unlocks Heroes tab)
+      setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
+    }
+
+    // Every wave win after tutorial: award 1 shard for a random hero
+    if (won && !tutorial.active) {
+      setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
     }
 
     const nextWave = won ? wave + 1 : wave
