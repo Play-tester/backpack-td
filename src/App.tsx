@@ -40,6 +40,7 @@ interface RoundResult {
   killGold: number; baseGold: number; ecoGold: number
   manaEarned: number; xpEarned: number; brokenLabels: string[]
   showTutorialHints?: boolean
+  shardDrop?: HeroKind   // set when a shard was awarded this wave
 }
 
 interface PendingLevelUp {
@@ -395,9 +396,16 @@ export default function App() {
     // Tutorial: check if we need to show tutorial hints BEFORE completing
     const showTutorialHints = tutorial.active && tutorial.currentStep === 'deploy_and_watch'
 
+    // Every wave win after tutorial: award 1 shard, capture which hero got it
+    let shardDrop: HeroKind | undefined
+    if (won && !tutorial.active) {
+      shardDrop = pickShardDrop(heroProgress)
+      setHeroProgress(prev => awardShards(prev, shardDrop!, 1))
+    }
+
     const rr: RoundResult = { won, kills: result.kills, escaped: result.escaped,
       killGold: displayKillGold, baseGold: displayBaseGold, ecoGold: displayEcoGold,
-      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints }
+      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop }
     setRoundResult(rr)
     setShowResultPopup(true)
 
@@ -412,11 +420,6 @@ export default function App() {
     } else if (tutorial.active && tutorial.currentStep === 'introduce_info_icon' && won) {
       nextTutorialStep = 'complete'
       setTutorial({ active: false, currentStep: 'complete' })
-    }
-
-    // Every wave win after tutorial: award 1 shard for a random hero
-    if (won && !tutorial.active) {
-      setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
     }
 
     const nextWave = won ? wave + 1 : wave
@@ -1202,6 +1205,7 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
   showTutorialHints?: boolean
 }) {
   const totalGold = r.killGold + r.baseGold + r.ecoGold
+  const heroDef = r.shardDrop ? HERO_DEFS[r.shardDrop] : null
   return (
     <div className="result-popup-overlay">
       <div className={`result-popup ${r.won ? 'popup-win' : 'popup-lose'}`}>
@@ -1238,6 +1242,16 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
             : <span className="popup-retry">economy ½ (+{r.ecoGold}g) · retry to advance</span>
           }
         </div>
+
+        {heroDef && (
+          <div className="popup-shard-row">
+            <span className="popup-shard-crystal">💎</span>
+            <span className="popup-shard-text">
+              +1 <strong>{heroDef.name} Shard</strong>
+            </span>
+            <span className="popup-shard-icon">{heroDef.icon}</span>
+          </div>
+        )}
 
         {showTutorialHints && (
           <div className="popup-tutorial-hints">
