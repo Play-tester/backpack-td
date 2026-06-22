@@ -117,6 +117,9 @@ export default function App() {
   const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
   const [heroMenuOpen, setHeroMenuOpen]     = useState(false)
   const [showFrostHint, setShowFrostHint]   = useState(false)
+  const [showShardHint, setShowShardHint]   = useState(false)   // first-shard popup
+  const [showHeroesTabHint, setShowHeroesTabHint] = useState(false)  // highlight Heroes tab
+  const hasSeenShard = useRef(false)
   const hasSeenFrost = useRef(false)
   const buffs = mergeBuffs(permBuffs, computeBuffs(buffGrants))
   const hasAcademy = [...placedItems.values()].some(p => p.item.def.kind === 'academy')
@@ -409,8 +412,12 @@ export default function App() {
     } else if (tutorial.active && tutorial.currentStep === 'introduce_info_icon' && won) {
       nextTutorialStep = 'complete'
       setTutorial({ active: false, currentStep: 'complete' })
-      // Tutorial complete — award first shard (unlocks Heroes tab)
+      // Tutorial complete — award first shard and show hint
       setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
+      if (!hasSeenShard.current) {
+        hasSeenShard.current = true
+        setShowShardHint(true)
+      }
     }
 
     // Every wave win after tutorial: award 1 shard for a random hero
@@ -696,6 +703,8 @@ export default function App() {
         activeTab={activeTab} onTabChange={setActiveTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} heroProgress={heroProgress}
         showSellHint={showSellHint} onDismissSellHint={() => setShowSellHint(false)}
         showFrostHint={showFrostHint} onDismissFrostHint={() => setShowFrostHint(false)}
+        showShardHint={showShardHint} onDismissShardHint={() => { setShowShardHint(false); setShowHeroesTabHint(true) }}
+        showHeroesTabHint={showHeroesTabHint} onDismissHeroesTabHint={() => setShowHeroesTabHint(false)}
         musicVolume={musicVolume} onMusicVolumeChange={setMusicVolume}
         onInfoIconTap={() => {
           if (tutorial.active && tutorial.currentStep === 'introduce_info_icon') {
@@ -729,6 +738,8 @@ function TradeUI({
   activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, heroProgress: _heroProgress,
   showSellHint, onDismissSellHint,
   showFrostHint, onDismissFrostHint,
+  showShardHint, onDismissShardHint,
+  showHeroesTabHint, onDismissHeroesTabHint,
   musicVolume, onMusicVolumeChange,
   onInfoIconTap,
   onStartBattle, onPickUpgrade, onPickBasePerk, onReroll, onSellItem,
@@ -745,6 +756,8 @@ function TradeUI({
   activeTab: Tab; onTabChange: (t: Tab) => void; hasAcademy: boolean; hasBasePerks: boolean; hasHeroes: boolean; heroProgress: HeroProgressMap
   showSellHint: boolean; onDismissSellHint: () => void
   showFrostHint: boolean; onDismissFrostHint: () => void
+  showShardHint: boolean; onDismissShardHint: () => void
+  showHeroesTabHint: boolean; onDismissHeroesTabHint: () => void
   musicVolume: number; onMusicVolumeChange: (v: number) => void
   onInfoIconTap?: () => void
   onStartBattle: () => void
@@ -927,7 +940,37 @@ function TradeUI({
         </div>
       )}
 
-      <BottomNav activeTab={activeTab} hasAcademy={hasAcademy} hasBasePerks={hasBasePerks} hasHeroes={hasHeroes} onTabChange={onTabChange} />
+      {/* ── Shard tutorial hint ── */}
+      {showShardHint && (
+        <div className="shard-hint-overlay" onClick={onDismissShardHint}>
+          <div className="shard-hint-panel" onClick={e => e.stopPropagation()}>
+            <div className="shard-hint-crystal">💎</div>
+            <h3 className="shard-hint-title">Hero Shard!</h3>
+            <p className="shard-hint-body">
+              You earned a <strong>Hero Shard</strong>! Collect enough shards to unlock
+              a powerful Hero who fights alongside your towers on the battlefield.
+            </p>
+            <p className="shard-hint-body">
+              You'll earn shards after each wave — keep winning to unlock your first Hero!
+            </p>
+            <button className="shard-hint-btn" onClick={onDismissShardHint}>
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
+      <BottomNav
+        activeTab={activeTab}
+        hasAcademy={hasAcademy}
+        hasBasePerks={hasBasePerks}
+        hasHeroes={hasHeroes}
+        heroesTabPulse={showHeroesTabHint}
+        onTabChange={tab => {
+          if (tab === 'heroes' && showHeroesTabHint) onDismissHeroesTabHint()
+          onTabChange(tab)
+        }}
+      />
 
       {/* ── Sell confirmation modal ── */}
       {pendingSell && (
