@@ -412,12 +412,6 @@ export default function App() {
     } else if (tutorial.active && tutorial.currentStep === 'introduce_info_icon' && won) {
       nextTutorialStep = 'complete'
       setTutorial({ active: false, currentStep: 'complete' })
-      // Tutorial complete — award first shard and show hint
-      setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
-      if (!hasSeenShard.current) {
-        hasSeenShard.current = true
-        setShowShardHint(true)
-      }
     }
 
     // Every wave win after tutorial: award 1 shard for a random hero
@@ -709,6 +703,12 @@ export default function App() {
         onInfoIconTap={() => {
           if (tutorial.active && tutorial.currentStep === 'introduce_info_icon') {
             setTutorial({ active: false, currentStep: 'complete' })
+            // Award first shard and show hint the moment the tutorial step is completed
+            if (!hasSeenShard.current) {
+              hasSeenShard.current = true
+              setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
+              setShowShardHint(true)
+            }
           }
         }}
         onStartBattle={() => {
