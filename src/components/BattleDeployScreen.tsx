@@ -15,6 +15,8 @@ const SLOTS_3: TowerSlot[] = [
   { id: 's1', x: 85,  y: 125 },
   { id: 's2', x: 305, y: 250 },
   { id: 's3', x: 85,  y: 375 },
+  { id: 's4', x: 305, y: 125 },  // right-top — symmetrical cover
+  { id: 's5', x: 305, y: 375 },  // right-bottom — symmetrical cover
 ]
 
 const SLOTS_5: TowerSlot[] = [
@@ -23,6 +25,8 @@ const SLOTS_5: TowerSlot[] = [
   { id: 's3', x: 85,  y: 250 },
   { id: 's4', x: 305, y: 333 },
   { id: 's5', x: 85,  y: 417 },
+  { id: 's6', x: 305, y: 83  },  // right-top — fills symmetry gap
+  { id: 's7', x: 85,  y: 333 },  // left lower-mid — fills left-side gap
 ]
 
 // Zigzag (battle_2.png): LEFT x=155, RIGHT x=225, turn1 y=165, turn2 y=335.
@@ -34,6 +38,8 @@ const SLOTS_ZIGZAG: TowerSlot[] = [
   { id: 's3', x: 273, y: 250 },  // right of right strip — flanks both top & bottom right segments
   { id: 's4', x: 107, y: 415 },  // left side — covers bottom section from left
   { id: 's5', x: 273, y: 415 },  // right of right strip — covers bottom right path
+  { id: 's6', x: 107, y: 83  },  // left-top — covers path before first turn from left
+  { id: 's7', x: 273, y: 165 },  // right at turn1 — maximises coverage at the bend
 ]
 
 // Triple-lane (battle_3.png): lanes at x=80, 195, 310 (width 52). Gaps centered at x=137 and x=253.
@@ -44,6 +50,8 @@ const SLOTS_TRIPLELANE: TowerSlot[] = [
   { id: 's4', x: 253, y: 250 },
   { id: 's5', x: 138, y: 417 },
   { id: 's6', x: 253, y: 417 },
+  { id: 's7', x: 253, y: 165 },  // right gap — mid-upper, cross-covers centre & right lanes
+  { id: 's8', x: 138, y: 335 },  // left gap — mid-lower, cross-covers left & centre lanes
 ]
 
 // Diamond (battle_4.png): verticals at x=90 (left) and x=300 (right), y=120–380.
@@ -54,6 +62,8 @@ const SLOTS_DIAMOND: TowerSlot[] = [
   { id: 's3', x: 195, y: 250 },  // center inside diamond
   { id: 's4', x: 350, y: 250 },  // right-outer
   { id: 's5', x: 195, y: 450 },  // center-bottom
+  { id: 's6', x: 40,  y: 130 },  // outer-left near fork — covers left arm entry
+  { id: 's7', x: 350, y: 380 },  // outer-right near merge — covers right arm exit
 ]
 
 // Funnel (battle_5.png): left x=110, right x=280, converge to center at y=300.
@@ -63,6 +73,8 @@ const SLOTS_FUNNEL: TowerSlot[] = [
   { id: 's3', x: 350, y: 200 },  // right-outer
   { id: 's4', x: 40,  y: 400 },  // left-outer, below convergence
   { id: 's5', x: 350, y: 400 },  // right-outer, below convergence
+  { id: 's6', x: 195, y: 250 },  // center between lanes — fires into both paths simultaneously
+  { id: 's7', x: 195, y: 430 },  // center below convergence — dominates the merged lane
 ]
 
 // Extended zigzag (battle_2.png scaled to 750px): LEFT=155, RIGHT=225, turn1 y=248, turn2 y=503.
@@ -77,6 +89,8 @@ const SLOTS_EXT_ZIGZAG: TowerSlot[] = [
   { id: 's6', x: 273, y: 503 },  // right side — at turn2
   { id: 's7', x: 107, y: 630 },  // left side — covers lower right strip from left
   { id: 's8', x: 273, y: 630 },  // right of right strip — covers bottom section
+  { id: 's9', x: 195, y: 248 },  // center at turn1 — covers both strips at the bend
+  { id: 's10',x: 195, y: 503 },  // center at turn2 — covers both strips at the bend
 ]
 
 // ── Path segments for the prep-phase SVG overlay ──────────────────────────
