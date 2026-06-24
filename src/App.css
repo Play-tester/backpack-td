@@ -551,7 +551,7 @@
   padding: 8px 18px;
   font-size: 15px; color: #3a1a05;
 }
-.popup-shard-crystal { font-size: 20px; filter: drop-shadow(0 0 6px #60c0ff); }
+.popup-shard-crystal { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 0 6px #60c0ff); }
 .popup-shard-text { font-size: 14px; color: #3a1a05; }
 .popup-shard-text strong { color: #7a3a00; }
 .popup-shard-icon { font-size: 20px; }

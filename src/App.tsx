@@ -1245,7 +1245,7 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
 
         {heroDef && (
           <div className="popup-shard-row">
-            <span className="popup-shard-crystal">💎</span>
+            <img src="/Heroes/Hero Shard crystal icon.png" alt="shard" className="popup-shard-crystal" />
             <span className="popup-shard-text">
               +1 <strong>{heroDef.name} Shard</strong>
             </span>

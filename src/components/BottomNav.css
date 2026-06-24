@@ -23,6 +23,7 @@
 .nav-btn.nav-locked { cursor: not-allowed; opacity: 0.3; }
 .nav-btn.nav-soft-locked { opacity: 0.5; }
 .nav-icon { font-size: 20px; line-height: 1; }
+.nav-heroes-icon { width: 22px; height: 22px; object-fit: contain; display: block; }
 .nav-label {
   font-size: 8px; font-weight: 900; font-family: 'Fredoka One', cursive;
   text-transform: uppercase; letter-spacing: 0.5px;

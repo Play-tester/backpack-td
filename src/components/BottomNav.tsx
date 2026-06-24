@@ -26,7 +26,7 @@ export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHero
         onClick={() => hasHeroes && onTabChange('heroes')}
         disabled={!hasHeroes}
       >
-        <span className="nav-icon">🦸</span>
+        <span className="nav-icon"><img src="/Heroes/Heroes nav tab icon.png" alt="Heroes" className="nav-heroes-icon" /></span>
         <span className="nav-label">Heroes</span>
         {!hasHeroes && <span className="nav-lock-badge">🔒</span>}
         {heroesTabPulse && <span className="nav-pulse-dot" />}

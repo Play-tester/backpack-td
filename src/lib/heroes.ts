@@ -24,10 +24,10 @@ export interface HeroDef {
 export const HERO_DEFS: Record<HeroKind, HeroDef> = {
   knight: {
     kind:          'knight',
-    name:          'Knight',
+    name:          'Týr',
     icon:          '⚔️',
     description:   'Melee tank who charges up the path and stuns nearby enemies',
-    bio:           'A veteran of a hundred sieges, the Knight has never once retreated. Clad in castle-forged plate, he marches straight into the enemy horde, shield raised, buying precious seconds for the towers to fire. His Shield Bash sends attackers flying — or simply puts them to sleep long enough to matter.',
+    bio:           'God of single combat and sacrifice. Týr marches straight into the enemy horde, shield raised, buying precious seconds for the towers to fire. He has faced Fenrir itself and did not flinch. His Shield Bash sends attackers sprawling — order imposed on chaos by sheer force of will.',
     hp:            300,
     damage:        40,
     attackSpeed:   1.0,
@@ -42,10 +42,10 @@ export const HERO_DEFS: Record<HeroKind, HeroDef> = {
   },
   ranger: {
     kind:          'ranger',
-    name:          'Ranger',
+    name:          'Ullr',
     icon:          '🏹',
     description:   'Ranged fighter who shoots enemies along the path',
-    bio:           'Raised in the borderwood, the Ranger learned to hunt before she could read. Her arrows find gaps in armour that no tower projectile can reach. When outnumbered she looses a Volley that blankets the whole lane — a brief, beautiful storm of fletched shafts that leaves the path clear.',
+    bio:           'God of the hunt and the bow. Ullr learned to track before he could speak and has never missed a mark. Her arrows find gaps in armour that no tower projectile can reach. When outnumbered she looses a Volley that blankets the whole lane — a brief storm of fletched shafts that leaves the path clear.',
     hp:            180,
     damage:        25,
     attackSpeed:   1.5,
@@ -60,10 +60,10 @@ export const HERO_DEFS: Record<HeroKind, HeroDef> = {
   },
   mage: {
     kind:          'mage',
-    name:          'Mage',
+    name:          'Skaði',
     icon:          '🧙',
     description:   'AoE spellcaster who freezes all enemies on screen',
-    bio:           'The Mage spent decades studying cold-weather conjuration in the northern academies. Frail in body but devastating in effect, a single Frost Nova from her staff can lock every enemy on the field in ice simultaneously — turning a losing battle into a killing ground in an instant.',
+    bio:           'Goddess of winter and the mountain cold. Skaði negotiated her own terms with the gods and answers to no one. Frail in appearance, devastating in effect — a single Frost Nova from her staff locks every enemy on the field in ice simultaneously, turning a losing battle into a killing ground.',
     hp:            140,
     damage:        20,
     attackSpeed:   0.8,

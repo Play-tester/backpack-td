@@ -14,6 +14,18 @@ import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
 import { HERO_DEFS, type HeroKind } from '../lib/heroes'
 import './BattleCanvas.css'
 
+// ── Preload hero battle sprites ──────────────────────────────────────────────
+function loadImg(src: string): HTMLImageElement {
+  const img = new Image()
+  img.src = src
+  return img
+}
+const HERO_SPRITES: Record<HeroKind, HTMLImageElement> = {
+  knight: loadImg('/Heroes/Týr battle sprite.png'),
+  ranger: loadImg('/Heroes/Ullr battle sprite.png'),
+  mage:   loadImg('/Heroes/Skaði battle sprite.png'),
+}
+
 interface PendingSpell { kind: string; x: number; y: number }
 interface SplashEffect { x: number; y: number; radius: number; maxRadius: number; timer: number }
 
@@ -74,38 +86,42 @@ function drawPath(ctx: CanvasRenderingContext2D, wave: number) {
 }
 
 // ── Hero drawing ─────────────────────────────────────────────────────────────
+const HERO_SIZE = 52   // sprite draw size (px)
+
 function drawHero(ctx: CanvasRenderingContext2D, hero: BattleHero) {
   if (hero.dead) return
-  const def = HERO_DEFS[hero.kind]
-  const HERO_R = 18  // hero circle radius
+  const def    = HERO_DEFS[hero.kind]
+  const sprite = HERO_SPRITES[hero.kind]
+  const hw     = HERO_SIZE / 2
 
-  // Glow
+  // Soft glow behind sprite
   ctx.save()
   ctx.shadowColor = hero.kind === 'knight' ? '#fbbf24'
     : hero.kind === 'ranger' ? '#4ade80'
     : '#818cf8'
-  ctx.shadowBlur  = 16
-  ctx.fillStyle   = hero.kind === 'knight' ? '#b45309'
-    : hero.kind === 'ranger' ? '#15803d'
-    : '#4338ca'
-  ctx.beginPath()
-  ctx.arc(hero.x, hero.y, HERO_R, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.shadowBlur = 18
+  if (sprite.complete && sprite.naturalWidth > 0) {
+    ctx.drawImage(sprite, hero.x - hw, hero.y - hw, HERO_SIZE, HERO_SIZE)
+  } else {
+    // Fallback circle while sprite loads
+    ctx.fillStyle = hero.kind === 'knight' ? '#b45309'
+      : hero.kind === 'ranger' ? '#15803d' : '#4338ca'
+    ctx.beginPath()
+    ctx.arc(hero.x, hero.y, 18, 0, Math.PI * 2)
+    ctx.fill()
+  }
   ctx.shadowBlur = 0
   ctx.restore()
 
-  // Icon text
-  ctx.save()
-  ctx.font = '18px sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(def.icon, hero.x, hero.y)
-  ctx.restore()
+  // Draw sprite without glow (clean pass on top)
+  if (sprite.complete && sprite.naturalWidth > 0) {
+    ctx.drawImage(sprite, hero.x - hw, hero.y - hw, HERO_SIZE, HERO_SIZE)
+  }
 
   // HP bar
-  const barW = HERO_R * 2 + 4
+  const barW = HERO_SIZE + 4
   const barX = hero.x - barW / 2
-  const barY = hero.y - HERO_R - 10
+  const barY = hero.y - hw - 8
   ctx.fillStyle = '#0d1b2a'
   ctx.fillRect(barX, barY, barW, 5)
   const pct = Math.max(0, hero.hp / hero.maxHp)

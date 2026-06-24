@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { ALL_HEROES, HERO_DEFS, type HeroKind, type HeroProgressMap } from '../lib/heroes'
 import './HeroesScreen.css'
 
+const HERO_PORTRAITS: Record<HeroKind, string> = {
+  knight: '/Heroes/Týr portrait.png',
+  ranger: '/Heroes/Ullr portrait.png',
+  mage:   '/Heroes/Skaði portrait.png',
+}
+const SHARD_ICON = '/Heroes/Hero Shard crystal icon.png'
+
 interface Props {
   heroProgress: HeroProgressMap
 }
@@ -20,8 +27,8 @@ export default function HeroesScreen({ heroProgress }: Props) {
     setTappedKind(null)
   }
 
-  const popupDef     = popupKind  ? HERO_DEFS[popupKind]  : null
-  const popupProgress = popupKind ? heroProgress[popupKind] : null
+  const popupDef      = popupKind ? HERO_DEFS[popupKind]     : null
+  const popupProgress = popupKind ? heroProgress[popupKind]  : null
 
   return (
     <div className="heroes-screen">
@@ -30,10 +37,11 @@ export default function HeroesScreen({ heroProgress }: Props) {
 
       <div className="heroes-grid">
         {ALL_HEROES.map(def => {
-          const prog    = heroProgress[def.kind]
-          const tapped  = tappedKind === def.kind
-          const hasShard  = prog.shards > 0
-          const unlocked  = prog.unlocked
+          const prog     = heroProgress[def.kind]
+          const tapped   = tappedKind === def.kind
+          const hasShard = prog.shards > 0
+          const unlocked = prog.unlocked
+          const portrait = HERO_PORTRAITS[def.kind]
 
           return (
             <div
@@ -44,9 +52,9 @@ export default function HeroesScreen({ heroProgress }: Props) {
               {/* Hero portrait */}
               <div className="hero-card-portrait">
                 {unlocked ? (
-                  <span className="hero-card-icon">{def.icon}</span>
+                  <img src={portrait} alt={def.name} className="hero-card-img" />
                 ) : hasShard ? (
-                  <span className="hero-card-silhouette">{def.icon}</span>
+                  <img src={portrait} alt={def.name} className="hero-card-img hero-card-img--silhouette" />
                 ) : (
                   <span className="hero-card-unknown">?</span>
                 )}
@@ -66,7 +74,10 @@ export default function HeroesScreen({ heroProgress }: Props) {
                   />
                 </div>
                 <span className="shard-bar-label">
-                  {unlocked ? '✓ Unlocked' : `${prog.shards} / ${def.shardsToUnlock}`}
+                  {unlocked
+                    ? '✓ Unlocked'
+                    : <><img src={SHARD_ICON} alt="" className="shard-label-icon" />{prog.shards} / {def.shardsToUnlock}</>
+                  }
                 </span>
               </div>
 
@@ -92,11 +103,11 @@ export default function HeroesScreen({ heroProgress }: Props) {
 
             {/* Big portrait */}
             <div className="hero-popup-portrait">
-              {popupProgress.unlocked ? (
-                <span className="hero-popup-icon">{popupDef.icon}</span>
-              ) : (
-                <span className="hero-popup-silhouette">{popupDef.icon}</span>
-              )}
+              <img
+                src={HERO_PORTRAITS[popupDef.kind]}
+                alt={popupDef.name}
+                className={`hero-popup-img${!popupProgress.unlocked ? ' hero-popup-img--silhouette' : ''}`}
+              />
             </div>
 
             <h3 className="hero-popup-name">{popupDef.name}</h3>
@@ -104,11 +115,11 @@ export default function HeroesScreen({ heroProgress }: Props) {
 
             {/* Stats */}
             <div className="hero-popup-stats">
-              <HeroStat label="HP"           value={popupDef.hp} />
-              <HeroStat label="Damage"       value={popupDef.damage} />
-              <HeroStat label="Atk Speed"    value={`${popupDef.attackSpeed}/s`} />
-              <HeroStat label="Range"        value={popupDef.attackRange === 40 ? 'Melee' : `${popupDef.attackRange}px`} />
-              <HeroStat label="Move Speed"   value={`${popupDef.speed}px/s`} />
+              <HeroStat label="HP"         value={popupDef.hp} />
+              <HeroStat label="Damage"     value={popupDef.damage} />
+              <HeroStat label="Atk Speed"  value={`${popupDef.attackSpeed}/s`} />
+              <HeroStat label="Range"      value={popupDef.attackRange === 40 ? 'Melee' : `${popupDef.attackRange}px`} />
+              <HeroStat label="Move Speed" value={`${popupDef.speed}px/s`} />
             </div>
 
             {/* Ability */}
@@ -129,7 +140,8 @@ export default function HeroesScreen({ heroProgress }: Props) {
               <span className="shard-bar-label">
                 {popupProgress.unlocked
                   ? '✓ Unlocked'
-                  : `${popupProgress.shards} / ${popupDef.shardsToUnlock} shards to unlock`}
+                  : <><img src={SHARD_ICON} alt="" className="shard-label-icon" />{popupProgress.shards} / {popupDef.shardsToUnlock} shards to unlock</>
+                }
               </span>
             </div>
 
@@ -138,7 +150,10 @@ export default function HeroesScreen({ heroProgress }: Props) {
               className={`hero-popup-upgrade${!popupProgress.unlocked ? ' hero-popup-upgrade--locked' : ''}`}
               disabled={!popupProgress.unlocked}
             >
-              {popupProgress.unlocked ? '⬆ Upgrade' : `🔒 ${popupProgress.shards}/${popupDef.shardsToUnlock} shards`}
+              {popupProgress.unlocked
+                ? '⬆ Upgrade'
+                : <><img src={SHARD_ICON} alt="" className="shard-label-icon" />{popupProgress.shards}/{popupDef.shardsToUnlock} shards</>
+              }
             </button>
           </div>
         </div>
