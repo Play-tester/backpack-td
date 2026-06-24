@@ -55,11 +55,37 @@ export default function BackpackGrid({ grid, placedItems, gridRef, onItemClick, 
     const lx = (activeDrag.mouseX - rect.left) / scale
     const ly = (activeDrag.mouseY - rect.top)  / scale
     if (lx < 0 || lx > gameW || ly < 0 || ly > grid.length * CS + BORDER * 2) return null
-    return [
-      Math.floor((ly - activeDrag.grabOffsetY) / CS),
-      Math.floor((lx - activeDrag.grabOffsetX) / CS),
-    ]
-  }, [activeDrag, gridRef, CS, cols, grid.length])
+
+    let row = Math.floor((ly - activeDrag.grabOffsetY) / CS)
+    let col = Math.floor((lx - activeDrag.grabOffsetX) / CS)
+
+    // Clamp anchor so the entire item stays within grid bounds
+    const offsets = SHAPE_OFFSETS[activeDrag.item.def.size as ItemSize]
+    const maxDr = Math.max(...offsets.map(([dr]) => dr))
+    const maxDc = Math.max(...offsets.map(([, dc]) => dc))
+    row = Math.max(0, Math.min(row, gridRows - 1 - maxDr))
+    col = Math.max(0, Math.min(col, cols    - 1 - maxDc))
+
+    // Clamp further so no cell lands on a locked cell
+    if (unlockedCells !== undefined) {
+      // Push row up until all cells are within unlocked region
+      while (row > 0) {
+        const cells = offsets.map(([dr, dc]) => [row + dr, col + dc] as [number, number])
+        const allUnlocked = cells.every(([r, c]) => r * cols + c < unlockedCells)
+        if (allUnlocked) break
+        row--
+      }
+      // Push col left until all cells are within unlocked region
+      while (col > 0) {
+        const cells = offsets.map(([dr, dc]) => [row + dr, col + dc] as [number, number])
+        const allUnlocked = cells.every(([r, c]) => r * cols + c < unlockedCells)
+        if (allUnlocked) break
+        col--
+      }
+    }
+
+    return [row, col]
+  }, [activeDrag, gridRef, CS, cols, grid.length, gridRows, unlockedCells])
 
   // ── Drag intent at snap ───────────────────────────────────────────────────
   const dragIntent = useMemo((): GhostType | null => {
