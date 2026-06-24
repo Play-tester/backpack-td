@@ -21,9 +21,9 @@ function loadImg(src: string): HTMLImageElement {
   return img
 }
 const HERO_SPRITES: Record<HeroKind, HTMLImageElement> = {
-  knight: loadImg('/Heroes/Týr battle sprite.png'),
-  ranger: loadImg('/Heroes/Ullr battle sprite.png'),
-  mage:   loadImg('/Heroes/Skaði battle sprite.png'),
+  knight: loadImg('/Heroes/tyr_battle_sprite.png'),
+  ranger: loadImg('/Heroes/ullr_battle_sprite.png'),
+  mage:   loadImg('/Heroes/skadi_battle_sprite.png'),
 }
 
 interface PendingSpell { kind: string; x: number; y: number }

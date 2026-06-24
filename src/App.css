@@ -428,7 +428,7 @@
   to   { transform: scale(1);   opacity: 1; }
 }
 .shard-hint-crystal {
-  font-size: 56px; line-height: 1;
+  width: 72px; height: 72px; object-fit: contain;
   filter: drop-shadow(0 0 12px #60c0ff);
   animation: shard-float 2s ease-in-out infinite alternate;
 }

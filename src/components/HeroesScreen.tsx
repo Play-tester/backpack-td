@@ -3,11 +3,11 @@ import { ALL_HEROES, HERO_DEFS, type HeroKind, type HeroProgressMap } from '../l
 import './HeroesScreen.css'
 
 const HERO_PORTRAITS: Record<HeroKind, string> = {
-  knight: '/Heroes/Týr portrait.png',
-  ranger: '/Heroes/Ullr portrait.png',
-  mage:   '/Heroes/Skaði portrait.png',
+  knight: '/Heroes/tyr_portrait.png',
+  ranger: '/Heroes/ullr_portrait.png',
+  mage:   '/Heroes/skadi_portrait.png',
 }
-const SHARD_ICON = '/Heroes/Hero Shard crystal icon.png'
+const SHARD_ICON = '/Heroes/shard_crystal.png'
 
 interface Props {
   heroProgress: HeroProgressMap

@@ -949,7 +949,7 @@ function TradeUI({
       {showShardHint && (
         <div className="shard-hint-overlay" onClick={onDismissShardHint}>
           <div className="shard-hint-panel" onClick={e => e.stopPropagation()}>
-            <div className="shard-hint-crystal">💎</div>
+            <img src="/Heroes/shard_crystal.png" alt="shard" className="shard-hint-crystal" />
             <h3 className="shard-hint-title">Hero Shard!</h3>
             <p className="shard-hint-body">
               You earned a <strong>Hero Shard</strong>! Collect enough shards to unlock
@@ -1247,7 +1247,7 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
 
         {heroDef && (
           <div className="popup-shard-row">
-            <img src="/Heroes/Hero Shard crystal icon.png" alt="shard" className="popup-shard-crystal" />
+            <img src="/Heroes/shard_crystal.png" alt="shard" className="popup-shard-crystal" />
             <span className="popup-shard-text">
               +{r.shardCount ?? 1} <strong>{heroDef.name} Shard{(r.shardCount ?? 1) > 1 ? 's' : ''}</strong>
             </span>
