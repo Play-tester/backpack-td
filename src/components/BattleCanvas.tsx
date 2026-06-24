@@ -142,7 +142,7 @@ function drawHero(ctx: CanvasRenderingContext2D, hero: BattleHero) {
 }
 
 // ── Canvas draw ─────────────────────────────────────────────────────────────
-function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: SplashEffect[], cannonHitEffects: SplashEffect[]) {
+function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: SplashEffect[], cannonHitEffects: SplashEffect[], freezeFlash = 0) {
   const H = isLongWave(state.wave) ? LONG_BATTLE_H : BATTLE_H
 
   // Transparent canvas — background image from parent div shows through
@@ -250,6 +250,17 @@ function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: 
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(`${Math.ceil(trojan.hp)} / ${trojan.maxHp}`, BATTLE_W / 2, barY + barH / 2)
+    ctx.restore()
+  }
+
+  // ── Freeze flash overlay ──────────────────────────────────────────────────
+  if (freezeFlash > 0) {
+    const alpha = freezeFlash * 0.35
+    ctx.save()
+    ctx.globalAlpha = alpha
+    ctx.fillStyle = '#7dd3fc'
+    ctx.fillRect(0, 0, BATTLE_W, H)
+    ctx.globalAlpha = 1
     ctx.restore()
   }
 
@@ -609,6 +620,7 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
   callbackRef.current   = onBattleEnd
   const splashEffects     = useRef<SplashEffect[]>([])
   const cannonHitEffects  = useRef<SplashEffect[]>([])
+  const freezeTimer       = useRef<number>(0)   // seconds remaining on freeze flash
 
   const long = isLongWave(wave)
 
@@ -627,7 +639,11 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
         const { kind, x, y } = pendingSpellRef.current
         pendingSpellRef.current = null
         stateRef.current = applySpell(stateRef.current, kind, x, y)
-        splashEffects.current.push({ x, y, radius: 0, maxRadius: 80, timer: 0.5 })
+        if (kind === 'freeze') {
+          freezeTimer.current = 0.6   // blue flash duration
+        } else {
+          splashEffects.current.push({ x, y, radius: 0, maxRadius: 80, timer: 0.5 })
+        }
       }
 
       // Apply hero deployment
@@ -671,7 +687,8 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
         .map(fx => ({ ...fx, timer: fx.timer - dt }))
         .filter(fx => fx.timer > 0)
 
-      draw(ctx, stateRef.current, splashEffects.current, cannonHitEffects.current)
+      freezeTimer.current = Math.max(0, freezeTimer.current - dt)
+      draw(ctx, stateRef.current, splashEffects.current, cannonHitEffects.current, freezeTimer.current)
 
       // Auto-scroll: keep frontmost enemy centred in the viewport
       if (long && scrollRef.current && stateRef.current.enemies.length > 0) {

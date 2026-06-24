@@ -558,7 +558,18 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
 const FIREBALL_DAMAGE = 80
 const FIREBALL_RADIUS = 80   // px
 
+const FREEZE_DURATION = 4   // seconds
+
 export function applySpell(state: BattleState, kind: string, x: number, y: number): BattleState {
+  if (kind === 'freeze') {
+    // Freeze all enemies on screen
+    const enemies = state.enemies.map(e => ({
+      ...e,
+      slowTimer: Math.max(e.slowTimer, FREEZE_DURATION),
+    }))
+    return { ...state, enemies }
+  }
+
   if (kind !== 'fireball') return state
 
   const result = { ...state.result }

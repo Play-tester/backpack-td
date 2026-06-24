@@ -1,4 +1,4 @@
-export type SpellKind = 'fireball'
+export type SpellKind = 'fireball' | 'freeze'
 
 export interface SpellDef {
   kind: SpellKind
@@ -17,6 +17,14 @@ export const SPELL_DEFS: Record<SpellKind, SpellDef> = {
     icon: '🔥',
     cooldown: 10,
     unlockCost: 50,
+  },
+  freeze: {
+    kind: 'freeze',
+    name: 'Freeze',
+    description: 'Freezes all enemies on screen for 4 seconds.',
+    icon: '❄️',
+    cooldown: 18,
+    unlockCost: 60,
   },
 }
 
