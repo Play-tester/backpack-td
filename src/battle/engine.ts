@@ -1,6 +1,6 @@
 import { getItemImage, getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
-import { HERO_DEFS, type HeroKind } from '../lib/heroes'
+import { HERO_DEFS, getEffectiveStats, type HeroKind } from '../lib/heroes'
 import { shapeDims, type ItemSize } from '../types'
 import {
   BATTLE_H, LANE_CX, ZIGZAG_WAYPOINTS, isZigzagWave, isLongWave,
@@ -207,6 +207,7 @@ export function initBattle(
   buffs: Buffs = DEFAULT_BUFFS,
   tutorialLimitEnemies?: number,
   heroKind?: HeroKind,
+  heroShards?: number,
 ): BattleState {
   const towers: BattleTower[] = []
 
@@ -249,13 +250,14 @@ export function initBattle(
   let hero: BattleHero | null = null
   if (heroKind) {
     const def = HERO_DEFS[heroKind]
+    const effStats = getEffectiveStats(def, heroShards ?? 0)
     hero = {
       kind:            heroKind,
       x:               LANE_CX,
       y:               BATTLE_H - 40,
-      hp:              def.hp,
-      maxHp:           def.hp,
-      abilityCooldown: def.ability.cooldown,  // first ability fires after first cooldown
+      hp:              effStats.hp,
+      maxHp:           effStats.hp,
+      abilityCooldown: def.ability.cooldown,
       attackCooldown:  0,
       stunTimer:       0,
       dead:            false,

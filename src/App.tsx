@@ -1178,6 +1178,7 @@ function BattlePhaseUI({
           tutorialLimitEnemies={tutorialConfig?.limitEnemies}
           pendingSpellRef={pendingSpellRef}
           pendingHeroRef={pendingHeroRef}
+          heroShards={selectedHero ? _heroProgress[selectedHero].shards : 0}
         />
 
         {/* Spell bar — bottom-left corner of battle canvas */}

@@ -11,7 +11,7 @@ import {
   type BattleHero, type BattleResult, type BattleState, type BattleTower, type DeployedTower, type Enemy, type Projectile,
 } from '../battle/types'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
-import { HERO_DEFS, type HeroKind } from '../lib/heroes'
+import { HERO_DEFS, getEffectiveStats, type HeroKind } from '../lib/heroes'
 import './BattleCanvas.css'
 
 // ── Preload hero battle sprites ──────────────────────────────────────────────
@@ -37,6 +37,7 @@ interface Props {
   tutorialLimitEnemies?: number
   pendingSpellRef?: React.MutableRefObject<PendingSpell | null>
   pendingHeroRef?: React.MutableRefObject<HeroKind | null>
+  heroShards?: number   // current shard count for the selected hero — drives stat scaling
 }
 
 // ── Path drawing ────────────────────────────────────────────────────────────
@@ -600,10 +601,10 @@ const ENEMY_COLOR: Record<string, string> = {
   trojan: '#8b5e3c',   // wooden brown
 }
 
-export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef }: Props) {
+export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0 }: Props) {
   const canvasRef       = useRef<HTMLCanvasElement>(null)
   const scrollRef       = useRef<HTMLDivElement>(null)
-  const stateRef        = useRef<BattleState>(initBattle(deployedTowers, wave, buffs, tutorialLimitEnemies))
+  const stateRef        = useRef<BattleState>(initBattle(deployedTowers, wave, buffs, tutorialLimitEnemies, undefined, heroShards))
   const callbackRef     = useRef(onBattleEnd)
   callbackRef.current   = onBattleEnd
   const splashEffects     = useRef<SplashEffect[]>([])
@@ -634,12 +635,13 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
         const heroKind = pendingHeroRef.current
         pendingHeroRef.current = null
         const def = HERO_DEFS[heroKind]
+        const effStats = getEffectiveStats(def, heroShards)
         const heroState: BattleHero = {
           kind:            heroKind,
           x:               LANE_CX,
           y:               BATTLE_H - 40,
-          hp:              def.hp,
-          maxHp:           def.hp,
+          hp:              effStats.hp,
+          maxHp:           effStats.hp,
           abilityCooldown: def.ability.cooldown,
           attackCooldown:  0,
           stunTimer:       0,

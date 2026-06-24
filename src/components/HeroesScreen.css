@@ -184,6 +184,100 @@
   display: flex; flex-direction: column; gap: 4px;
 }
 
+/* ── Tier milestone track ── */
+.tier-track-wrap {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px;
+  background: #fdf5e8; border: 2px solid #d4b896; border-radius: 10px;
+}
+
+.tier-track-bar-row {
+  padding: 0 8px;
+}
+
+.tier-track-bar {
+  position: relative;
+  height: 8px;
+  background: #d4b896;
+  border-radius: 4px;
+  margin: 14px 0 0;
+}
+
+.tier-track-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f0c030, #f97316);
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+
+.tier-dot {
+  position: absolute;
+  top: 50%; transform: translate(-50%, -50%);
+  width: 14px; height: 14px;
+  background: #b0906a;
+  border: 2px solid #7a5228;
+  border-radius: 50%;
+  transition: background 0.3s, border-color 0.3s;
+}
+.tier-dot--done {
+  background: #f0c030;
+  border-color: #3a1a05;
+}
+
+.tier-labels-row {
+  position: relative;
+  height: 36px;
+  margin: 0 8px;
+}
+.tier-label {
+  position: absolute;
+  transform: translateX(-50%);
+  top: 0;
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 8px; color: #b0906a; font-weight: 600;
+  white-space: nowrap; line-height: 1.2;
+  text-align: center;
+}
+.tier-label--done  { color: #7a5228; }
+.tier-label--next  { color: #c47c10; font-weight: 800; }
+.tier-label-shards { font-size: 7px; color: #b0906a; }
+
+.tier-shard-count {
+  font-size: 10px; color: #7a5228; font-weight: 600;
+  text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+
+/* ── Hero tier badge on card ── */
+.hero-tier-badge {
+  position: absolute; top: 6px; right: 8px;
+  background: #f0c030; color: #3a1a05;
+  font-size: 9px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  padding: 1px 5px; border-radius: 6px;
+  border: 1.5px solid #3a1a05;
+  line-height: 1.4;
+}
+
+/* ── Abilities section ── */
+.hero-popup-abilities {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.hero-popup-ability--bonus {
+  background: #dce8ff; border-color: #6080c0;
+}
+.hero-popup-ability--locked {
+  background: #e8e0d4; border-color: #b0906a;
+  opacity: 0.7;
+}
+
+/* ── Boosted stat value ── */
+.hero-stat-value--boosted {
+  color: #d97706;
+  font-weight: 900;
+}
+
 /* Upgrade button */
 .hero-popup-upgrade {
   padding: 12px;
