@@ -12,6 +12,19 @@ const SHARD_ICON = '/Heroes/shard_crystal.png'
 // Labels for tier milestone dots
 const TIER_LABELS = ['Unlock', '+Stats', 'Ability 2', 'Skin', '+Stats', 'Ability 3']
 
+// Placeholder heroes — not yet implemented
+const PLACEHOLDER_HEROES = [
+  { name: 'Thor',     icon: '⚡', description: 'God of Thunder' },
+  { name: 'Odin',     icon: '👁',  description: 'Allfather, master of wisdom' },
+  { name: 'Freya',    icon: '🌸', description: 'Goddess of love and war' },
+  { name: 'Loki',     icon: '🎭', description: 'Trickster of the gods' },
+  { name: 'Baldur',   icon: '☀️', description: 'God of light and purity' },
+  { name: 'Fenrir',   icon: '🐺', description: 'The great wolf unleashed' },
+  { name: 'Hel',      icon: '💀', description: 'Ruler of the realm of the dead' },
+  { name: 'Valkyrie', icon: '🛡', description: 'Chooser of the slain' },
+  { name: 'Heimdall', icon: '🔔', description: 'Guardian of the Bifrost' },
+]
+
 interface Props {
   heroProgress: HeroProgressMap
 }
@@ -107,6 +120,23 @@ export default function HeroesScreen({ heroProgress }: Props) {
             </div>
           )
         })}
+
+        {/* Placeholder heroes */}
+        {PLACEHOLDER_HEROES.map(p => (
+          <div key={p.name} className="hero-card hero-card--placeholder">
+            <div className="hero-card-portrait">
+              <span className="hero-card-placeholder-icon">{p.icon}</span>
+            </div>
+            <div className="hero-card-name">{p.name}</div>
+            <div className="hero-card-coming-soon">Coming Soon</div>
+            <div className="hero-card-shards">
+              <div className="shard-bar-track">
+                <div className="shard-bar-fill" style={{ width: '0%' }} />
+              </div>
+              <span className="hero-placeholder-desc">{p.description}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Hero info popup ── */}

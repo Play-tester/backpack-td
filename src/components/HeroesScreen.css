@@ -184,6 +184,38 @@
   display: flex; flex-direction: column; gap: 4px;
 }
 
+/* ── Placeholder hero cards ── */
+.hero-card--placeholder {
+  opacity: 0.55;
+  cursor: default;
+  background: #ede0c4;
+  border-color: #b0906a;
+  box-shadow: 2px 2px 0 #b0906a;
+  pointer-events: none;
+}
+.hero-card--placeholder .hero-card-portrait {
+  background: #c8b090;
+  border-color: #b0906a;
+}
+.hero-card-placeholder-icon {
+  font-size: 26px;
+  line-height: 1;
+  filter: grayscale(0.4);
+}
+.hero-card-coming-soon {
+  font-size: 8px;
+  font-weight: 700;
+  color: #b0906a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.hero-placeholder-desc {
+  font-size: 8px;
+  color: #b0906a;
+  text-align: center;
+  line-height: 1.3;
+}
+
 /* ── Tier milestone track ── */
 .tier-track-wrap {
   display: flex; flex-direction: column; gap: 4px;
