@@ -105,7 +105,11 @@ const ENEMY_STATS: Record<EnemyKind, { hp: number; speed: number; gold: number; 
   runner: { hp: 50,  speed: 115, gold: 1 },  // fast but fragile
   tank:   { hp: 120, speed: 50,  gold: 1 },  // slow, tanky
   swarm:  { hp: 35,  speed: 140, gold: 1, group: 3 },  // tiny, always spawns as a group of 3
+  trojan: { hp: 800, speed: 30,  gold: 10 }, // boss — high HP, very slow, releases grunts on death
 }
+
+// Enemies released when the Trojan Horse dies
+const TROJAN_RELEASE: EnemyKind[] = ['grunt', 'grunt', 'grunt', 'grunt']
 
 // ── Wave config ────────────────────────────────────────────────────────────
 const SPAWN_INTERVAL = 1.4   // seconds between enemies
@@ -121,6 +125,7 @@ const WAVE_TABLE: WaveConfig[] = [
 ]
 
 function getWaveConfig(wave: number): WaveConfig {
+  if (wave === 10) return { count: 1, kinds: ['trojan'] }  // boss wave
   if (wave <= WAVE_TABLE.length) return WAVE_TABLE[wave - 1]
   // wave 6+: all four types, +2 enemies per wave
   return { count: 8 + (wave - 5) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm'] }
@@ -184,7 +189,7 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
     x = laneX ?? LANE_CX
     y = -34 + startDist
   }
-  return {
+  const enemy: Enemy = {
     id: `e${_eid++}`,
     kind, x, y, hp, maxHp: hp,
     baseSpeed: stats.speed,
@@ -192,6 +197,8 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
     pathDist: startDist,
     pathId,
   }
+  if (kind === 'trojan') enemy.spawnsOnDeath = [...TROJAN_RELEASE]
+  return enemy
 }
 
 export function initBattle(
@@ -490,6 +497,15 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
       result.goldEarned += ENEMY_STATS[e.kind].gold
       result.manaEarned += 6
       result.xpEarned   += 4   // 1/3 of mana
+      // Trojan Horse: release grunts at its death position
+      if (e.spawnsOnDeath) {
+        for (let i = 0; i < e.spawnsOnDeath.length; i++) {
+          const released = spawnEnemy(e.spawnsOnDeath[i], prev.wave, e.pathDist - i * 16, undefined, e.pathId)
+          released.x = e.x
+          released.y = e.y
+          alive.push(released)
+        }
+      }
     } else if (
       isExtZigzagWave(prev.wave) ? e.pathDist >= EXT_ZIGZAG_TOTAL_LEN :
       isZigzagWave(prev.wave)    ? e.pathDist >= ZIGZAG_TOTAL_LEN     :

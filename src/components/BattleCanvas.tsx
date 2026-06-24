@@ -210,6 +210,48 @@ function draw(ctx: CanvasRenderingContext2D, state: BattleState, splashEffects: 
     ctx.restore()
   }
 
+  // ── Boss HP bar (drawn at top when trojan is on field) ─────────────────────
+  const trojan = state.enemies.find(e => e.kind === 'trojan')
+  if (trojan) {
+    const barW = 200, barH = 12
+    const barX = BATTLE_W / 2 - barW / 2
+    const barY = 44
+    const pct  = Math.max(0, trojan.hp / trojan.maxHp)
+    // Dark pill background
+    ctx.save()
+    ctx.fillStyle = 'rgba(8,18,36,0.85)'
+    ctx.beginPath()
+    ;(ctx as any).roundRect(barX - 6, barY - 20, barW + 12, barH + 26, 8)
+    ctx.fill()
+    // Label
+    ctx.font = 'bold 10px monospace'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    ctx.fillStyle = '#ffd700'
+    ctx.fillText('☠ TROJAN HORSE', BATTLE_W / 2, barY - 2)
+    // HP track
+    ctx.fillStyle = '#1a0a00'
+    ctx.beginPath()
+    ;(ctx as any).roundRect(barX, barY, barW, barH, 4)
+    ctx.fill()
+    // HP fill
+    const grad = ctx.createLinearGradient(barX, barY, barX + barW, barY)
+    grad.addColorStop(0, '#ef4444')
+    grad.addColorStop(0.5, '#f97316')
+    grad.addColorStop(1, '#fbbf24')
+    ctx.fillStyle = grad
+    ctx.beginPath()
+    ;(ctx as any).roundRect(barX, barY, barW * pct, barH, 4)
+    ctx.fill()
+    // HP text
+    ctx.font = '9px monospace'
+    ctx.fillStyle = '#fff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(`${Math.ceil(trojan.hp)} / ${trojan.maxHp}`, BATTLE_W / 2, barY + barH / 2)
+    ctx.restore()
+  }
+
   // Wave progress text — centered on lane, above enemy spawn point
   const done  = state.result.kills + state.result.escaped
   const total = done + state.enemies.length + state.spawnQueue.length
@@ -320,7 +362,93 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   swarm:  { src: '/swarm_a.png',           frameW: 887, frameH: 443, drawW: 36, drawH: 18 },
 }
 
+function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
+  // Large wooden cart body
+  const BW = 72, BH = 48
+  const x0 = e.x - BW / 2
+  const y0 = e.y - BH / 2
+
+  // Wheel radius
+  const WR = 12
+  const wheelY = y0 + BH - 2
+
+  ctx.save()
+
+  // Wheels
+  ctx.fillStyle = '#3b1f00'
+  ctx.strokeStyle = '#7c5230'
+  ctx.lineWidth = 3
+  for (const wx of [x0 + 14, x0 + BW - 14]) {
+    ctx.beginPath()
+    ctx.arc(wx, wheelY, WR, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    // Spokes
+    ctx.strokeStyle = '#a0703a'
+    ctx.lineWidth = 2
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+      ctx.beginPath()
+      ctx.moveTo(wx, wheelY)
+      ctx.lineTo(wx + Math.cos(a) * (WR - 2), wheelY + Math.sin(a) * (WR - 2))
+      ctx.stroke()
+    }
+    ctx.strokeStyle = '#7c5230'
+    ctx.lineWidth = 3
+  }
+
+  // Main cart body
+  ctx.fillStyle = '#8b5e3c'
+  ctx.strokeStyle = '#5c3d1e'
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ;(ctx as any).roundRect(x0, y0, BW, BH - 10, 6)
+  ctx.fill()
+  ctx.stroke()
+
+  // Wood plank lines
+  ctx.strokeStyle = '#7a4f28'
+  ctx.lineWidth = 1
+  for (let i = 1; i < 3; i++) {
+    ctx.beginPath()
+    ctx.moveTo(x0 + 4, y0 + (BH - 10) * i / 3)
+    ctx.lineTo(x0 + BW - 4, y0 + (BH - 10) * i / 3)
+    ctx.stroke()
+  }
+
+  // TROJAN label
+  ctx.font = 'bold 8px monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = '#ffe8c0'
+  ctx.shadowColor = 'rgba(0,0,0,0.8)'
+  ctx.shadowBlur = 3
+  ctx.fillText('TROJAN', e.x, y0 + (BH - 10) / 2)
+  ctx.shadowBlur = 0
+
+  ctx.restore()
+}
+
 function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
+  // Trojan Horse gets its own special renderer
+  if (e.kind === 'trojan') {
+    drawTrojan(ctx, e)
+    // HP bar above
+    const BW = 72
+    const x0 = e.x - BW / 2
+    const y0 = e.y - 24 - 10
+    ctx.fillStyle = '#0d1b2a'
+    ctx.fillRect(x0, y0, BW, 5)
+    const pct = Math.max(0, e.hp / e.maxHp)
+    ctx.fillStyle = pct > 0.5 ? '#f87171' : pct > 0.25 ? '#fbbf24' : '#ef4444'
+    ctx.fillRect(x0, y0, BW * pct, 5)
+    if (e.slowTimer > 0) {
+      ctx.font = '7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'
+      ctx.fillText('❄', e.x, e.y)
+    }
+    return
+  }
+
   const sheet   = ENEMY_SHEETS[e.kind]
   const slowed  = e.slowTimer > 0
   const baseColor = ENEMY_COLOR[e.kind] ?? '#ef4444'
@@ -349,7 +477,6 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
     ;(ctx as any).roundRect(x0, y0, EW, EH, 4)
     ctx.fill()
   }
-
 
   // HP bar background
   ctx.fillStyle = '#0d1b2a'
@@ -461,6 +588,7 @@ const ENEMY_COLOR: Record<string, string> = {
   runner: '#f97316',   // orange
   tank:   '#7c3aed',   // purple — big and slow
   swarm:  '#facc15',   // yellow — tiny and fast
+  trojan: '#8b5e3c',   // wooden brown
 }
 
 export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef }: Props) {

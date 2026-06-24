@@ -98,7 +98,7 @@ export function isExtZigzagWave(wave: number): boolean {
 
 export type BattlePhase = 'fighting' | 'won' | 'lost'
 
-export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm'
+export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm' | 'trojan'
 
 /** A tower the player has manually placed onto the battle arena */
 export interface DeployedTower {
@@ -118,6 +118,11 @@ export interface Enemy {
   slowTimer: number   // seconds of slow remaining
   pathDist: number    // distance traveled along path (0 = entry point; negative = off-screen)
   pathId:   number    // which path the enemy follows (0 = default/left, 1 = right diamond fork)
+  spawnsOnDeath?: EnemyKind[]  // enemies released when this unit dies (Trojan Horse)
+}
+
+export function isBossWave(wave: number): boolean {
+  return wave === 10
 }
 
 export interface BattleTower {
