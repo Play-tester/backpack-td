@@ -30,6 +30,7 @@ import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
+import { saveGame, loadGame, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle'
@@ -84,52 +85,85 @@ function calculateGridDimensions(totalCells: number): { cols: number; rows: numb
 
 // ── App ────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [phase, setPhase]             = useState<GamePhase>('narrative')
-  const [gold, setGold]               = useState(STARTING_GOLD)
-  const [mana, setMana]               = useState(0)
-  const [level, setLevel]             = useState(1)
-  const [xp, setXp]                   = useState(0)
-  const [baseLevel, setBaseLevel]     = useState(1)
-  const [permBuffs, setPermBuffs]     = useState<Buffs>(DEFAULT_BUFFS)
-  const [buffGrants, setBuffGrants]   = useState<BuffGrant[]>([])
+  // ── Load save once at boot ─────────────────────────────────────────────────
+  const savedGame = loadGame()
+
+  const [phase, setPhase]             = useState<GamePhase>(savedGame ? 'trade' : 'narrative')
+  const [gold, setGold]               = useState(savedGame?.gold          ?? STARTING_GOLD)
+  const [mana, setMana]               = useState(savedGame?.mana          ?? 0)
+  const [level, setLevel]             = useState(savedGame?.level         ?? 1)
+  const [xp, setXp]                   = useState(savedGame?.xp            ?? 0)
+  const [baseLevel, setBaseLevel]     = useState(savedGame?.baseLevel     ?? 1)
+  const [permBuffs, setPermBuffs]     = useState<Buffs>(savedGame?.permBuffs     ?? DEFAULT_BUFFS)
+  const [buffGrants, setBuffGrants]   = useState<BuffGrant[]>(savedGame?.buffGrants ?? [])
   const [pendingBaseLevel, setPendingBaseLevel] = useState<PendingBaseLevel | null>(null)
-  const [unlockedCells, setUnlockedCells] = useState(BASE_GRID_CELLS)  // 6 initially
-  const [gridCols, setGridCols]       = useState(GRID_COLS)
-  const [gridRows, setGridRows]       = useState(GRID_ROWS)
-  const [grid, setGrid]               = useState<GridState>(createGrid)
-  const [placedItems, setPlacedItems] = useState<Map<string, PlacedItem>>(new Map)
-  const [tutorial, setTutorial]       = useState<TutorialState>(getInitialTutorialState)
+  const [unlockedCells, setUnlockedCells] = useState(savedGame?.unlockedCells ?? BASE_GRID_CELLS)
+  const [gridCols, setGridCols]       = useState(savedGame?.gridCols      ?? GRID_COLS)
+  const [gridRows, setGridRows]       = useState(savedGame?.gridRows      ?? GRID_ROWS)
+  const [grid, setGrid]               = useState<GridState>(savedGame?.grid ?? createGrid())
+  const [placedItems, setPlacedItems] = useState<Map<string, PlacedItem>>(
+    savedGame ? arrayToPlacedItems(savedGame.placedItems) : new Map()
+  )
+  const [tutorial, setTutorial]       = useState<TutorialState>(savedGame?.tutorial ?? getInitialTutorialState())
   const tutorialConfig = getStepConfig(tutorial.currentStep)
   const [shopSlots, setShopSlots]     = useState(() =>
-    generateShop(3, 1, tutorialConfig?.forceShopItems)  // 3 items per reroll
+    savedGame?.shopSlots ?? generateShop(3, 1, tutorialConfig?.forceShopItems)
   )
-  const [shopSize, setShopSize]       = useState(3)
-  const [rerollCost, setRerollCost]   = useState(1)
+  const [shopSize, setShopSize]       = useState(savedGame?.shopSize      ?? 3)
+  const [rerollCost, setRerollCost]   = useState(savedGame?.rerollCost    ?? 1)
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null)
   const [showResultPopup, setShowResultPopup] = useState(false)
   const [pendingLvlUp, setPendingLvlUp] = useState<PendingLevelUp | null>(null)
   const [deployedTowers, setDeployedTowers] = useState<DeployedTower[]>([])
   const [hasDeployedInPrep, setHasDeployedInPrep] = useState(false)
-  const [wave, setWave] = useState(1)
-  const [activeTab, setActiveTab]           = useState<Tab>('battle')
-  const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>([])
-  const [unlockedSpells, setUnlockedSpells] = useState<SpellKind[]>([])
-  const [showSellHint, setShowSellHint]     = useState(false)
-  const [heroProgress, setHeroProgress]     = useState<HeroProgressMap>(getInitialHeroProgress)
-  const [selectedHero, setSelectedHero]     = useState<HeroKind | null>(null)
-  const [heroMenuOpen, setHeroMenuOpen]     = useState(false)
-  const [showFrostHint, setShowFrostHint]   = useState(false)
-  const [showShardHint, setShowShardHint]   = useState(false)   // first-shard popup
-  const [showHeroesTabHint, setShowHeroesTabHint] = useState(false)  // highlight Heroes tab
-  const hasSeenShard = useRef(false)
-  const hasSeenFrost = useRef(false)
+  const [wave, setWave]               = useState(savedGame?.wave          ?? 1)
+  const [activeTab, setActiveTab]     = useState<Tab>('battle')
+  const [pickedBasePerks, setPickedBasePerks] = useState<BasePerk[]>(savedGame?.pickedBasePerks ?? [])
+  const [unlockedSpells, setUnlockedSpells]   = useState<SpellKind[]>(savedGame?.unlockedSpells ?? [])
+  const [showSellHint, setShowSellHint]       = useState(false)
+  const [heroProgress, setHeroProgress]       = useState<HeroProgressMap>(savedGame?.heroProgress ?? getInitialHeroProgress())
+  const [selectedHero, setSelectedHero]       = useState<HeroKind | null>(null)
+  const [heroMenuOpen, setHeroMenuOpen]       = useState(false)
+  const [showFrostHint, setShowFrostHint]     = useState(false)
+  const [showShardHint, setShowShardHint]     = useState(false)
+  const [showHeroesTabHint, setShowHeroesTabHint] = useState(false)
+  const hasSeenShard = useRef(savedGame?.hasSeenShard ?? false)
+  const hasSeenFrost = useRef(savedGame?.hasSeenFrost ?? false)
   const buffs = mergeBuffs(permBuffs, computeBuffs(buffGrants))
   const hasAcademy = [...placedItems.values()].some(p => p.item.def.kind === 'academy')
 
   // ── Background music ───────────────────────────────────────────────────────
   const audioRef       = useRef<HTMLAudioElement | null>(null)  // main / explore music
   const battleAudioRef = useRef<HTMLAudioElement | null>(null)  // battle music
-  const [musicVolume, setMusicVolume] = useState(50)
+  const [musicVolume, setMusicVolume] = useState(savedGame?.musicVolume ?? 50)
+
+  // ── Auto-save whenever persistent state changes ────────────────────────────
+  useEffect(() => {
+    const data: SaveData = {
+      wave, gold, mana, level, xp, baseLevel,
+      permBuffs, buffGrants,
+      unlockedCells, gridCols, gridRows,
+      grid,
+      placedItems: placedItemsToArray(placedItems),
+      tutorial,
+      shopSlots, shopSize, rerollCost,
+      pickedBasePerks, unlockedSpells,
+      heroProgress,
+      musicVolume,
+      hasSeenShard: hasSeenShard.current,
+      hasSeenFrost: hasSeenFrost.current,
+    }
+    saveGame(data)
+  }, [wave, gold, mana, level, xp, baseLevel,
+      permBuffs, buffGrants,
+      unlockedCells, gridCols, gridRows,
+      grid, placedItems,
+      tutorial,
+      shopSlots, shopSize, rerollCost,
+      pickedBasePerks, unlockedSpells,
+      heroProgress,
+      musicVolume,
+  ])
 
   // Init both audio tracks once
   useEffect(() => {
