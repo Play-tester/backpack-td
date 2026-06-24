@@ -1,0 +1,130 @@
+.wmap-screen {
+  width: 100%; height: 100%;
+  background: #0d1b2a;
+  display: flex; flex-direction: column;
+  padding: 28px 16px 24px;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.wmap-header {
+  text-align: center;
+}
+.wmap-title {
+  font-size: 30px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #f0c030; margin: 0;
+  text-shadow: 0 2px 10px rgba(240,192,48,0.4);
+}
+.wmap-subtitle {
+  font-size: 13px; color: #7a9ab8; margin: 4px 0 0;
+  letter-spacing: 1px;
+}
+
+/* ── World cards ── */
+.wmap-worlds {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.wmap-card {
+  position: relative;
+  border-radius: 18px;
+  padding: 20px 18px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+.wmap-card:active:not(.wmap-card--locked) {
+  transform: translateY(2px);
+}
+
+.wmap-card--viking {
+  background: linear-gradient(135deg, #1a2a1a 0%, #0d1b0d 100%);
+  border-color: #4a7a3a;
+  box-shadow: 0 4px 20px rgba(74,122,58,0.3);
+}
+.wmap-card--celtic {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0d0d20 100%);
+  border-color: #4a4a8a;
+  box-shadow: 0 4px 20px rgba(74,74,138,0.3);
+}
+.wmap-card--locked {
+  opacity: 0.55;
+  cursor: default;
+  filter: grayscale(0.4);
+}
+
+/* Badge (Complete / New!) */
+.wmap-card-badge {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 10px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase;
+  background: #4a7a3a; color: #d0f0c0;
+  padding: 3px 9px; border-radius: 8px;
+}
+.wmap-card-badge--new {
+  background: #7a4aaa; color: #e8c8ff;
+}
+
+/* Lock icon */
+.wmap-card-lock {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 20px;
+}
+
+/* Icon */
+.wmap-card-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 2px 8px rgba(255,255,255,0.2));
+}
+
+/* Info */
+.wmap-card-info {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.wmap-card-subtitle {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #7a9ab8;
+}
+.wmap-card-name {
+  font-size: 24px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #fff; margin: 0;
+}
+.wmap-card-desc {
+  font-size: 12px; color: #8a9ab0; line-height: 1.5;
+  margin: 0;
+}
+
+/* Stars */
+.wmap-card-stars {
+  font-size: 22px; color: #f0c030;
+  letter-spacing: 4px;
+  text-shadow: 0 0 8px rgba(240,192,48,0.6);
+}
+
+/* CTA buttons */
+.wmap-card-btn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Fredoka One', cursive; font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.wmap-card-btn--replay {
+  background: #3a5a2a; color: #d0f0c0;
+  box-shadow: 0 3px 0 #1a3a10;
+}
+.wmap-card-btn--start {
+  background: #f0c030; color: #1a0a05;
+  box-shadow: 0 3px 0 #a07820;
+}
+.wmap-card-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}

@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import './NarrativeScreen.css'
 
-const SLIDES = [
+export interface NarrativeSlide {
+  image: string
+  lines: string[]
+}
+
+const DEFAULT_SLIDES: NarrativeSlide[] = [
   {
     image: '/narrative_1.png',
     lines: [
@@ -22,25 +27,26 @@ const SLIDES = [
       'Build your strategy… before the enemy arrives.',
     ],
   },
-] as const
+]
 
 interface Props {
   onComplete: () => void
+  slides?: NarrativeSlide[]
 }
 
-export default function NarrativeScreen({ onComplete }: Props) {
+export default function NarrativeScreen({ onComplete, slides = DEFAULT_SLIDES }: Props) {
   const [index, setIndex] = useState(0)
 
   function advance() {
-    if (index < SLIDES.length - 1) {
+    if (index < slides.length - 1) {
       setIndex(i => i + 1)
     } else {
       onComplete()
     }
   }
 
-  const slide = SLIDES[index]
-  const isLast = index === SLIDES.length - 1
+  const slide = slides[index]
+  const isLast = index === slides.length - 1
 
   return (
     <div className="narrative-screen" onClick={advance}>
@@ -56,7 +62,7 @@ export default function NarrativeScreen({ onComplete }: Props) {
         </div>
         <div className="narrative-footer">
           <div className="narrative-dots">
-            {SLIDES.map((_, i) => (
+            {slides.map((_, i) => (
               <span key={i} className={`narrative-dot${i === index ? ' active' : ''}`} />
             ))}
           </div>

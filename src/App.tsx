@@ -23,7 +23,9 @@ import { generateShop, getSellPrice, type ShopSlot } from './lib/shop'
 import { GRID_COLS, GRID_ROWS, MAX_GRID_COLS, MAX_GRID_ROWS, SHAPE_OFFSETS, type GridState, type Item, type ItemSize, type PlacedItem } from './types'
 import { getInitialTutorialState, getStepConfig, type TutorialState } from './lib/tutorial'
 import TutorialOverlay from './components/TutorialOverlay'
-import NarrativeScreen from './components/NarrativeScreen'
+import NarrativeScreen, { type NarrativeSlide } from './components/NarrativeScreen'
+import World1CompleteScreen from './components/World1CompleteScreen'
+import WorldMapScreen from './components/WorldMapScreen'
 import BottomNav, { type Tab } from './components/BottomNav'
 import BaseScreen from './components/BaseScreen'
 import AcademyScreen from './components/AcademyScreen'
@@ -33,7 +35,24 @@ import HeroesScreen from './components/HeroesScreen'
 import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
 
 // ── Local types ────────────────────────────────────────────────────────────
-type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle'
+type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle' | 'world1-complete' | 'world-map' | 'world2-narrative'
+
+const WORLD2_SLIDES: NarrativeSlide[] = [
+  {
+    image: '/narrative_world2_1.png',
+    lines: [
+      'The Viking tribes have united.',
+      'Under one banner, one purpose — defend what was won.',
+    ],
+  },
+  {
+    image: '/narrative_world2_2.png',
+    lines: [
+      'But across the hills, the Celtic Kingdom stirs.',
+      'Their warriors are already at the gate.',
+    ],
+  },
+]
 
 interface RoundResult {
   won: boolean
@@ -481,7 +500,12 @@ export default function App() {
 
   function handleResultContinue() {
     setShowResultPopup(false)
-    setPhase('trade')
+    // Wave 10 win = World 1 complete — go to completion screen
+    if (wave > 10) {
+      setPhase('world1-complete')
+    } else {
+      setPhase('trade')
+    }
   }
 
   // ── Re-roll shop ──────────────────────────────────────────────────────────
@@ -595,6 +619,37 @@ export default function App() {
     return (
       <div className="game-container">
         <NarrativeScreen onComplete={() => setPhase('trade')} />
+      </div>
+    )
+  }
+
+  if (phase === 'world1-complete') {
+    return (
+      <div className="game-container">
+        <World1CompleteScreen onContinue={() => setPhase('world-map')} />
+      </div>
+    )
+  }
+
+  if (phase === 'world-map') {
+    return (
+      <div className="game-container">
+        <WorldMapScreen
+          world1Completed={wave > 10}
+          onSelectWorld1={() => setPhase('trade')}
+          onSelectWorld2={() => setPhase('world2-narrative')}
+        />
+      </div>
+    )
+  }
+
+  if (phase === 'world2-narrative') {
+    return (
+      <div className="game-container">
+        <NarrativeScreen
+          slides={WORLD2_SLIDES}
+          onComplete={() => setPhase('trade')}
+        />
       </div>
     )
   }
