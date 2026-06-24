@@ -50,7 +50,7 @@
   overflow: hidden;
 }
 .hero-card--unlocked   .hero-card-portrait { background: #3a1a05; }
-.hero-card--seen       .hero-card-portrait { background: #2a2a3a; }
+.hero-card--seen       .hero-card-portrait { background: #3a1a05; }
 .hero-card--unknown    .hero-card-portrait { background: #888; }
 
 .hero-card-img {

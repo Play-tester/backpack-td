@@ -58,7 +58,7 @@ export default function HeroesScreen({ heroProgress }: Props) {
           return (
             <div
               key={def.kind}
-              className={`hero-card${unlocked ? ' hero-card--unlocked' : hasShard ? ' hero-card--seen' : ' hero-card--unknown'}${tapped ? ' hero-card--tapped' : ''}`}
+              className={`hero-card${unlocked ? ' hero-card--unlocked' : hasShard ? ' hero-card--seen' : ' hero-card--unknown'}${tapped && (hasShard || unlocked) ? ' hero-card--tapped' : ''}`}
               onClick={() => handleCardTap(def.kind)}
             >
               {/* Tier badge */}
@@ -68,10 +68,8 @@ export default function HeroesScreen({ heroProgress }: Props) {
 
               {/* Portrait */}
               <div className="hero-card-portrait">
-                {unlocked ? (
+                {hasShard || unlocked ? (
                   <img src={portrait} alt={def.name} className="hero-card-img" />
-                ) : hasShard ? (
-                  <img src={portrait} alt={def.name} className="hero-card-img hero-card-img--silhouette" />
                 ) : (
                   <span className="hero-card-unknown">?</span>
                 )}
@@ -122,7 +120,7 @@ export default function HeroesScreen({ heroProgress }: Props) {
               <img
                 src={HERO_PORTRAITS[popupDef.kind]}
                 alt={popupDef.name}
-                className={`hero-popup-img${!popupProgress.unlocked ? ' hero-popup-img--silhouette' : ''}`}
+                className="hero-popup-img"
               />
             </div>
 
