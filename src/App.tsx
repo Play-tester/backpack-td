@@ -30,7 +30,7 @@ import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
-import { saveGame, loadGame, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
+import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle'
@@ -1055,6 +1055,17 @@ function TradeUI({
                 <span className="settings-slider-val">{musicVolume}</span>
               </div>
             </div>
+            <button
+              className="settings-reset"
+              onClick={() => {
+                if (confirm('Reset all progress and restart from wave 1?')) {
+                  clearSave()
+                  window.location.reload()
+                }
+              }}
+            >
+              🗑 Reset Progress
+            </button>
             <button className="settings-close" onClick={() => setShowSettings(false)}>✕ Close</button>
           </div>
         </div>

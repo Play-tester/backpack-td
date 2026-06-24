@@ -251,6 +251,15 @@
   min-width: 28px;
   text-align: right;
 }
+.settings-reset {
+  background: #7a3a00; color: #f5e6c0;
+  border: 3px solid #3a1a05; border-radius: 8px;
+  padding: 8px 16px; width: 100%;
+  font-family: 'Fredoka One', cursive; font-size: 14px;
+  cursor: pointer; box-shadow: 3px 3px 0 #3a1a05;
+  transition: transform 0.1s;
+}
+.settings-reset:hover { background: #5a2a00; transform: translateY(-1px); }
 .settings-close {
   background: #e03030;
   color: #fff;
