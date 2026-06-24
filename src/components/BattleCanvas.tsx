@@ -360,6 +360,7 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   runner: { src: '/runner_a.png',          frameW: 887, frameH: 443, drawW: 46, drawH: 23 },
   tank:   { src: '/tank_a.png',            frameW: 887, frameH: 443, drawW: 70, drawH: 35 },
   swarm:  { src: '/swarm_a.png',           frameW: 887, frameH: 443, drawW: 36, drawH: 18 },
+  trojan: { src: '/trojan_a.png',          frameW: 887, frameH: 443, drawW: 90, drawH: 45 },
 }
 
 function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
@@ -429,18 +430,26 @@ function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
-  // Trojan Horse gets its own special renderer
+  // Trojan Horse — use sprite sheet if loaded, else procedural cart
   if (e.kind === 'trojan') {
-    drawTrojan(ctx, e)
-    // HP bar above
-    const BW = 72
-    const x0 = e.x - BW / 2
-    const y0 = e.y - 24 - 10
+    const sheet = ENEMY_SHEETS['trojan']
+    const EW = sheet.drawW, EH = sheet.drawH
+    const x0 = e.x - EW / 2
+    const y0 = e.y - EH / 2
+    const img = getCachedImage(sheet.src)
+    if (img) {
+      const frame = Math.floor(elapsed * ANIM_FPS) % FRAME_COUNT
+      const sy = frame * sheet.frameH
+      ctx.drawImage(img, 0, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
+    } else {
+      drawTrojan(ctx, e)
+    }
+    // HP bar above sprite
     ctx.fillStyle = '#0d1b2a'
-    ctx.fillRect(x0, y0, BW, 5)
+    ctx.fillRect(x0, y0 - 8, EW, 5)
     const pct = Math.max(0, e.hp / e.maxHp)
     ctx.fillStyle = pct > 0.5 ? '#f87171' : pct > 0.25 ? '#fbbf24' : '#ef4444'
-    ctx.fillRect(x0, y0, BW * pct, 5)
+    ctx.fillRect(x0, y0 - 8, EW * pct, 5)
     if (e.slowTimer > 0) {
       ctx.font = '7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       ctx.fillStyle = 'rgba(255,255,255,0.8)'
