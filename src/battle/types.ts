@@ -24,14 +24,14 @@ export const ZIGZAG_WAYPOINTS: [number, number][] = [
 ]
 
 export function isZigzagWave(wave: number): boolean {
-  return wave >= 5 && wave <= 9
+  return wave >= 5 && wave <= 10
 }
 
 // ── Triple-lane layout (waves 10–11) ────────────────────────────────────────
 export const TRIPLE_LANE_XS = [80, 195, 310] as const
 
 export function isTripleLaneWave(wave: number): boolean {
-  return wave >= 10 && wave <= 11
+  return wave === 11  // wave 10 is boss wave — single center lane
 }
 
 // ── Diamond split-merge path (waves 12–13) ──────────────────────────────────
