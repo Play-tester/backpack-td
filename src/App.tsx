@@ -399,10 +399,11 @@ export default function App() {
 
     // Award shards only from wave 5 onward
     let shardDrop: HeroKind | undefined
+    let shardCount: number | undefined
     if (won && wave >= 5 && !tutorial.active) {
-      const shardCount = wave === 5 ? 1 : (Math.random() < 0.5 ? 1 : 2)
+      shardCount = wave === 5 ? 1 : (Math.random() < 0.5 ? 1 : 2)
       shardDrop = pickShardDrop(heroProgress)
-      setHeroProgress(prev => awardShards(prev, shardDrop!, shardCount))
+      setHeroProgress(prev => awardShards(prev, shardDrop!, shardCount!))
       // First-ever shard — show the tutorial hint
       if (!hasSeenShard.current) {
         hasSeenShard.current = true
@@ -412,8 +413,7 @@ export default function App() {
 
     const rr: RoundResult = { won, kills: result.kills, escaped: result.escaped,
       killGold: displayKillGold, baseGold: displayBaseGold, ecoGold: displayEcoGold,
-      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop,
-      shardCount: shardDrop ? shardCount : undefined }
+      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop, shardCount }
     setRoundResult(rr)
     setShowResultPopup(true)
 
