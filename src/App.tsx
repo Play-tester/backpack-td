@@ -41,6 +41,7 @@ interface RoundResult {
   manaEarned: number; xpEarned: number; brokenLabels: string[]
   showTutorialHints?: boolean
   shardDrop?: HeroKind   // set when a shard was awarded this wave
+  shardCount?: number
 }
 
 interface PendingLevelUp {
@@ -396,16 +397,23 @@ export default function App() {
     // Tutorial: check if we need to show tutorial hints BEFORE completing
     const showTutorialHints = tutorial.active && tutorial.currentStep === 'deploy_and_watch'
 
-    // Every wave win after tutorial: award 1 shard, capture which hero got it
+    // Award shards only from wave 5 onward
     let shardDrop: HeroKind | undefined
-    if (won && !tutorial.active) {
+    if (won && wave >= 5 && !tutorial.active) {
+      const shardCount = wave === 5 ? 1 : (Math.random() < 0.5 ? 1 : 2)
       shardDrop = pickShardDrop(heroProgress)
-      setHeroProgress(prev => awardShards(prev, shardDrop!, 1))
+      setHeroProgress(prev => awardShards(prev, shardDrop!, shardCount))
+      // First-ever shard — show the tutorial hint
+      if (!hasSeenShard.current) {
+        hasSeenShard.current = true
+        setShowShardHint(true)
+      }
     }
 
     const rr: RoundResult = { won, kills: result.kills, escaped: result.escaped,
       killGold: displayKillGold, baseGold: displayBaseGold, ecoGold: displayEcoGold,
-      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop }
+      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop,
+      shardCount: shardDrop ? shardCount : undefined }
     setRoundResult(rr)
     setShowResultPopup(true)
 
@@ -706,12 +714,6 @@ export default function App() {
         onInfoIconTap={() => {
           if (tutorial.active && tutorial.currentStep === 'introduce_info_icon') {
             setTutorial({ active: false, currentStep: 'complete' })
-            // Award first shard and show hint the moment the tutorial step is completed
-            if (!hasSeenShard.current) {
-              hasSeenShard.current = true
-              setHeroProgress(prev => awardShards(prev, pickShardDrop(prev), 1))
-              setShowShardHint(true)
-            }
           }
         }}
         onStartBattle={() => {
@@ -1247,7 +1249,7 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
           <div className="popup-shard-row">
             <img src="/Heroes/Hero Shard crystal icon.png" alt="shard" className="popup-shard-crystal" />
             <span className="popup-shard-text">
-              +1 <strong>{heroDef.name} Shard</strong>
+              +{r.shardCount ?? 1} <strong>{heroDef.name} Shard{(r.shardCount ?? 1) > 1 ? 's' : ''}</strong>
             </span>
             <span className="popup-shard-icon">{heroDef.icon}</span>
           </div>
