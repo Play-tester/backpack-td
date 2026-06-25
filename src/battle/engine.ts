@@ -1,6 +1,7 @@
 import { getItemImage, getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
 import { HERO_DEFS, getEffectiveStats, type HeroKind } from '../lib/heroes'
+import { getPiercingArrowsResist, type CraftingState } from '../lib/crafting'
 import { shapeDims, type ItemSize } from '../types'
 import {
   BATTLE_H, LANE_CX, ZIGZAG_WAYPOINTS, isZigzagWave, isLongWave,
@@ -11,6 +12,10 @@ import {
   type BattleHero, type BattlePhase, type BattleState, type BattleTower, type DeployedTower,
   type Enemy, type EnemyKind, type Projectile,
 } from './types'
+
+// ── Crafting state (set per-battle by initBattle) ─────────────────────────
+// Module-level so spawnEnemy (called from tickBattle) can read it without threading state.
+let _shieldArcherResist = 0.3  // default: 30% damage from archers
 
 // ── Zig-zag path segments ──────────────────────────────────────────────────
 interface PSeg { x0: number; y0: number; x1: number; y1: number; len: number }
@@ -203,7 +208,7 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
     pathId,
   }
   if (kind === 'trojan') enemy.spawnsOnDeath = [...TROJAN_RELEASE]
-  if (kind === 'shield') enemy.damageResist = { archer: 0.3 }  // takes only 30% from archers
+  if (kind === 'shield') enemy.damageResist = { archer: _shieldArcherResist }  // crafting-aware resist
   return enemy
 }
 
@@ -214,7 +219,10 @@ export function initBattle(
   tutorialLimitEnemies?: number,
   heroKind?: HeroKind,
   heroShards?: number,
+  craftingState?: CraftingState,
 ): BattleState {
+  // Apply crafting upgrades that affect enemy stats
+  _shieldArcherResist = craftingState ? getPiercingArrowsResist(craftingState) : 0.3
   const towers: BattleTower[] = []
 
   for (const { item, x, y } of deployedTowers) {
@@ -279,7 +287,7 @@ export function initBattle(
     nextSpawnAt: 0.6,
     elapsed:     0,
     phase:       'fighting',
-    result:      { kills: 0, escaped: 0, goldEarned: 0, manaEarned: 0, xpEarned: 0 },
+    result:      { kills: 0, escaped: 0, goldEarned: 0, manaEarned: 0, xpEarned: 0, woodEarned: 0 },
     nextLane:        0,
     nextForkPath: 0,
     hero,

@@ -1,0 +1,91 @@
+.sb-intro-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(10, 20, 35, 0.85);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+
+.sb-intro-panel {
+  background: #f5e6c0;
+  border: 3px solid #3a1a05;
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 420px;
+  padding: 22px 20px 36px;
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: 88vh; overflow-y: auto;
+}
+
+.sb-intro-header {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sb-intro-tag {
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase;
+  background: #ef4444; color: #fff;
+  padding: 2px 10px; border-radius: 8px;
+}
+.sb-intro-title {
+  font-size: 26px; font-weight: 900;
+  font-family: 'Fredoka One', cursive;
+  color: #3a1a05; margin: 0;
+}
+
+/* Sprite — show just first frame */
+.sb-intro-sprite-wrap {
+  display: flex; justify-content: center;
+  background: #e8d4a8; border: 2px solid #c4a060;
+  border-radius: 14px; padding: 12px;
+  overflow: hidden; height: 100px;
+}
+.sb-intro-sprite {
+  height: 400px;        /* show top quarter = first frame */
+  object-fit: cover;
+  object-position: top;
+  width: auto;
+  image-rendering: crisp-edges;
+}
+
+.sb-intro-desc {
+  font-size: 13px; color: #3a1a05; line-height: 1.6;
+  text-align: center; margin: 0;
+}
+
+/* Stat pills */
+.sb-intro-stats {
+  display: flex; gap: 10px;
+}
+.sb-intro-stat {
+  flex: 1;
+  background: #fdf5e8; border: 2px solid #d4b896;
+  border-radius: 10px; padding: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sb-intro-stat-label {
+  font-size: 10px; font-weight: 700; color: #7a5228; text-transform: uppercase; letter-spacing: 1px;
+}
+.sb-intro-stat-value {
+  font-size: 12px; font-weight: 800;
+}
+.sb-intro-stat-value--danger { color: #ef4444; }
+.sb-intro-stat-value--good   { color: #16a34a; }
+
+.sb-intro-tip {
+  font-size: 12px; color: #5a3a18; line-height: 1.5;
+  background: #e8d4a8; border: 2px solid #c4a060;
+  border-radius: 10px; padding: 10px 12px;
+  text-align: center;
+}
+
+.sb-intro-btn {
+  padding: 14px;
+  border-radius: 12px;
+  background: #3a1a05; color: #f5e6c0;
+  border: 3px solid #3a1a05;
+  font-family: 'Fredoka One', cursive; font-size: 16px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #7a5228;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.sb-intro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #7a5228;
+}

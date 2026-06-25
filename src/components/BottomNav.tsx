@@ -1,25 +1,32 @@
 import './BottomNav.css'
 
-export type Tab = 'battle' | 'base' | 'academy' | 'heroes'
+export type Tab = 'battle' | 'base' | 'academy' | 'heroes' | 'crafting'
 
 interface Props {
   activeTab: Tab
   hasBasePerks: boolean
   hasAcademy: boolean
   hasHeroes: boolean
+  hasCrafting: boolean
   heroesTabPulse?: boolean
+  craftingTabPulse?: boolean
   onTabChange: (tab: Tab) => void
 }
 
-export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHeroes, heroesTabPulse, onTabChange }: Props) {
+export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHeroes, hasCrafting, heroesTabPulse, craftingTabPulse, onTabChange }: Props) {
   const baseUnlocked    = hasBasePerks
   const academyUnlocked = hasAcademy
 
   return (
     <nav className="bottom-nav">
-      <button className="nav-btn nav-locked" disabled>
-        <span className="nav-icon">🔒</span>
+      <button
+        className={`nav-btn${activeTab === 'crafting' ? ' nav-active' : ''}${!hasCrafting ? ' nav-locked' : ''}${craftingTabPulse ? ' nav-pulse' : ''}`}
+        onClick={() => hasCrafting && onTabChange('crafting')}
+        disabled={!hasCrafting}
+      >
+        <span className="nav-icon">{hasCrafting ? '⚒️' : '🔒'}</span>
         <span className="nav-label">Crafting</span>
+        {craftingTabPulse && <span className="nav-pulse-dot" />}
       </button>
       <button
         className={`nav-btn${activeTab === 'heroes' ? ' nav-active' : ''}${!hasHeroes ? ' nav-locked' : ''}${heroesTabPulse ? ' nav-pulse' : ''}`}

@@ -164,6 +164,7 @@ export interface BattleResult {
   escaped: number
   goldEarned: number
   manaEarned: number
+  woodEarned: number
   xpEarned: number     // = floor(manaEarned / 3)
 }
 

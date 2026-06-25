@@ -5,6 +5,7 @@
 import { DEFAULT_BUFFS, type Buffs, type BuffGrant } from './levelup'
 import { getInitialHeroProgress, type HeroProgressMap } from './heroes'
 import { getInitialTutorialState, type TutorialState } from './tutorial'
+import { getInitialCraftingState, type CraftingState } from './crafting'
 import { createGrid } from './grid'
 import { GRID_COLS, GRID_ROWS } from '../types/index'
 import { generateShop } from './shop'
@@ -40,6 +41,11 @@ export interface SaveData {
   musicVolume:     number
   hasSeenShard:    boolean
   hasSeenFrost:    boolean
+  wood:            number
+  craftingState:   CraftingState
+  craftingUnlocked: boolean
+  hasSeenShieldIntro: boolean
+  hasSeenVillageWoodGift: boolean
 }
 
 export function saveGame(data: SaveData): void {
@@ -93,6 +99,11 @@ export function getDefaultSave(startingGold: number, shopSize: number): SaveData
     musicVolume:     50,
     hasSeenShard:    false,
     hasSeenFrost:    false,
+    wood:            0,
+    craftingState:   getInitialCraftingState(),
+    craftingUnlocked: false,
+    hasSeenShieldIntro: false,
+    hasSeenVillageWoodGift: false,
   }
 }
 

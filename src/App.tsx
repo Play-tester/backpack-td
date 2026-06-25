@@ -33,6 +33,9 @@ import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
 import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
+import { CRAFTING_UPGRADES, getInitialCraftingState, type CraftingState } from './lib/crafting'
+import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
+import CraftingScreen from './components/CraftingScreen'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle' | 'world1-complete' | 'world-map' | 'world2-narrative'
@@ -62,6 +65,7 @@ interface RoundResult {
   showTutorialHints?: boolean
   shardDrop?: HeroKind   // set when a shard was awarded this wave
   shardCount?: number
+  woodEarned?: number
 }
 
 interface PendingLevelUp {
@@ -151,6 +155,16 @@ export default function App() {
   const buffs = mergeBuffs(permBuffs, computeBuffs(buffGrants))
   const hasAcademy = [...placedItems.values()].some(p => p.item.def.kind === 'academy')
 
+  // ── Crafting state ─────────────────────────────────────────────────────────
+  const [wood, setWood]                             = useState(savedGame?.wood ?? 0)
+  const [craftingState, setCraftingState]           = useState<CraftingState>(savedGame?.craftingState ?? getInitialCraftingState())
+  const [craftingUnlocked, setCraftingUnlocked]     = useState(savedGame?.craftingUnlocked ?? false)
+  const [showShieldIntro, setShowShieldIntro]       = useState(false)
+  const [showVillageGift, setShowVillageGift]       = useState(false)
+  const pendingShieldIntro = useRef(false)
+  const hasSeenShieldIntro  = useRef(savedGame?.hasSeenShieldIntro  ?? false)
+  const hasSeenVillageGift  = useRef(savedGame?.hasSeenVillageWoodGift ?? false)
+
   // ── Background music ───────────────────────────────────────────────────────
   const audioRef       = useRef<HTMLAudioElement | null>(null)  // main / explore music
   const battleAudioRef = useRef<HTMLAudioElement | null>(null)  // battle music
@@ -171,6 +185,11 @@ export default function App() {
       musicVolume,
       hasSeenShard: hasSeenShard.current,
       hasSeenFrost: hasSeenFrost.current,
+      wood,
+      craftingState,
+      craftingUnlocked,
+      hasSeenShieldIntro: hasSeenShieldIntro.current,
+      hasSeenVillageWoodGift: hasSeenVillageGift.current,
     }
     saveGame(data)
   }, [wave, gold, mana, level, xp, baseLevel,
@@ -182,6 +201,7 @@ export default function App() {
       pickedBasePerks, unlockedSpells,
       heroProgress,
       musicVolume,
+      wood, craftingState, craftingUnlocked,
   ])
 
   // Init both audio tracks once
@@ -464,9 +484,23 @@ export default function App() {
       }
     }
 
+    // 6. Wood earning — 2 wood per win from wave 11+
+    let woodEarned = 0
+    if (won && wave >= 11) {
+      woodEarned = 2
+      setWood(w => w + woodEarned)
+    }
+    // First time player wins wave 11 — unlock crafting and queue intro
+    if (won && wave === 11 && !hasSeenShieldIntro.current) {
+      hasSeenShieldIntro.current = true
+      setCraftingUnlocked(true)
+      pendingShieldIntro.current = true
+    }
+
     const rr: RoundResult = { won, kills: result.kills, escaped: result.escaped,
       killGold: displayKillGold, baseGold: displayBaseGold, ecoGold: displayEcoGold,
-      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop, shardCount }
+      manaEarned: gainedMana, xpEarned: gainedXp, brokenLabels, showTutorialHints, shardDrop, shardCount,
+      woodEarned }
     setRoundResult(rr)
     setShowResultPopup(true)
 
@@ -500,12 +534,45 @@ export default function App() {
 
   function handleResultContinue() {
     setShowResultPopup(false)
+    // Show shield bearer intro before going to trade (only first time)
+    if (pendingShieldIntro.current) {
+      pendingShieldIntro.current = false
+      setShowShieldIntro(true)
+      return
+    }
     // Wave 10 win = World 1 complete — go to completion screen
     if (wave > 10) {
       setPhase('world1-complete')
     } else {
       setPhase('trade')
     }
+  }
+
+  function handleShieldIntroClose() {
+    setShowShieldIntro(false)
+    // Give village gift wood (9 pieces, first open of crafting)
+    if (!hasSeenVillageGift.current) {
+      setWood(w => w + 9)
+      hasSeenVillageGift.current = true
+      setShowVillageGift(true)
+    }
+    setActiveTab('crafting')
+    setPhase('trade')
+  }
+
+  // ── Crafting upgrade ───────────────────────────────────────────────────────
+  function handleCraftingUpgrade(upgradeId: string) {
+    const upg = CRAFTING_UPGRADES[upgradeId as keyof typeof CRAFTING_UPGRADES]
+    if (!upg) return
+    const level = craftingState[upgradeId] ?? 0
+    if (level >= upg.maxLevel) return
+    const costGold = upg.costGold(level)
+    const costMats = upg.costMats(level)
+    const woodCost = costMats.wood ?? 0
+    if (gold < costGold || wood < woodCost) return
+    setGold(g => g - costGold)
+    setWood(w => w - woodCost)
+    setCraftingState(prev => ({ ...prev, [upgradeId]: level + 1 }))
   }
 
   // ── Re-roll shop ──────────────────────────────────────────────────────────
@@ -614,6 +681,15 @@ export default function App() {
   // ── Render ─────────────────────────────────────────────────────────────────
   const manaNeeded   = manaForNextLevel(level)
   const xpNeeded     = xpForNextBaseLevel(baseLevel)
+
+  // Shield Bearer intro overlay (shown after wave 11 win, before crafting tab)
+  if (showShieldIntro) {
+    return (
+      <div className="game-container">
+        <ShieldBearerIntroScreen onClose={handleShieldIntroClose} />
+      </div>
+    )
+  }
 
   if (phase === 'narrative') {
     return (
@@ -739,6 +815,7 @@ export default function App() {
         heroProgress={heroProgress}
         selectedHero={selectedHero}
         onSelectHero={setSelectedHero}
+        craftingState={craftingState}
       />
     )
   }
@@ -751,7 +828,7 @@ export default function App() {
           baseLevel={baseLevel} xp={xp} xpNeeded={xpNeeded}
           permBuffs={permBuffs} pickedBasePerks={pickedBasePerks}
         />
-        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
+        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -767,7 +844,7 @@ export default function App() {
           wave={wave}
           onUnlockSpell={handleUnlockSpell}
         />
-        <BottomNav activeTab="academy" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
+        <BottomNav activeTab="academy" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -777,7 +854,24 @@ export default function App() {
     return (
       <div className="game-container">
         <HeroesScreen heroProgress={heroProgress} />
-        <BottomNav activeTab="heroes" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} onTabChange={setActiveTab} />
+        <BottomNav activeTab="heroes" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
+      </div>
+    )
+  }
+
+  // ── Crafting tab ──────────────────────────────────────────────────────────
+  if (activeTab === 'crafting') {
+    return (
+      <div className="game-container" style={{ overflowY: 'auto' }}>
+        <CraftingScreen
+          gold={gold}
+          wood={wood}
+          craftingState={craftingState}
+          onUpgrade={handleCraftingUpgrade}
+          showVillageGiftPopup={showVillageGift}
+          onCloseVillageGift={() => setShowVillageGift(false)}
+        />
+        <BottomNav activeTab="crafting" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -794,7 +888,7 @@ export default function App() {
         cellSize={cellSize} onCellSizeChange={setCellSize}
         gridCols={gridCols} gridRows={gridRows} unlockedCells={unlockedCells}
         tutorialConfig={tutorialConfig}
-        activeTab={activeTab} onTabChange={setActiveTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} heroProgress={heroProgress}
+        activeTab={activeTab} onTabChange={setActiveTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} heroProgress={heroProgress}
         showSellHint={showSellHint} onDismissSellHint={() => setShowSellHint(false)}
         showFrostHint={showFrostHint} onDismissFrostHint={() => setShowFrostHint(false)}
         showShardHint={showShardHint} onDismissShardHint={() => { setShowShardHint(false); setShowHeroesTabHint(true) }}
@@ -829,7 +923,7 @@ function TradeUI({
   grid, placedItems, shopSlots,
   gridRef, roundResult, buffGrants, pendingLvlUp, pendingBaseLevel, rerollCost,
   cellSize, onCellSizeChange, gridCols, gridRows, unlockedCells, tutorialConfig,
-  activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, heroProgress: _heroProgress,
+  activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, hasCrafting, heroProgress: _heroProgress,
   showSellHint, onDismissSellHint,
   showFrostHint, onDismissFrostHint,
   showShardHint, onDismissShardHint,
@@ -847,7 +941,7 @@ function TradeUI({
   cellSize: number; onCellSizeChange: (cs: number) => void
   gridCols: number; gridRows: number; unlockedCells: number
   tutorialConfig: ReturnType<typeof getStepConfig>
-  activeTab: Tab; onTabChange: (t: Tab) => void; hasAcademy: boolean; hasBasePerks: boolean; hasHeroes: boolean; heroProgress: HeroProgressMap
+  activeTab: Tab; onTabChange: (t: Tab) => void; hasAcademy: boolean; hasBasePerks: boolean; hasHeroes: boolean; hasCrafting: boolean; heroProgress: HeroProgressMap
   showSellHint: boolean; onDismissSellHint: () => void
   showFrostHint: boolean; onDismissFrostHint: () => void
   showShardHint: boolean; onDismissShardHint: () => void
@@ -1059,6 +1153,7 @@ function TradeUI({
         hasAcademy={hasAcademy}
         hasBasePerks={hasBasePerks}
         hasHeroes={hasHeroes}
+        hasCrafting={hasCrafting}
         heroesTabPulse={showHeroesTabHint}
         onTabChange={tab => {
           if (tab === 'heroes' && showHeroesTabHint) onDismissHeroesTabHint()
@@ -1137,6 +1232,7 @@ function BattlePhaseUI({
   tutorialConfig, showResultPopup, roundResult,
   onBattleEnd, onResultContinue,
   heroProgress: _heroProgress, selectedHero, onSelectHero: _onSelectHero,
+  craftingState,
 }: {
   gold: number; xp: number; xpNeeded: number; baseLevel: number
   wave: number; buffs: ReturnType<typeof mergeBuffs>
@@ -1150,6 +1246,7 @@ function BattlePhaseUI({
   heroProgress: HeroProgressMap
   selectedHero: HeroKind | null
   onSelectHero: (kind: HeroKind | null) => void
+  craftingState?: CraftingState
 }) {
   const pendingSpellRef = useRef<{ kind: string; x: number; y: number } | null>(null)
   const pendingHeroRef  = useRef<HeroKind | null>(null)
@@ -1234,6 +1331,7 @@ function BattlePhaseUI({
           pendingSpellRef={pendingSpellRef}
           pendingHeroRef={pendingHeroRef}
           heroShards={selectedHero ? _heroProgress[selectedHero].shards : 0}
+          craftingState={craftingState}
         />
 
         {/* Spell bar — bottom-left corner of battle canvas */}
@@ -1353,6 +1451,13 @@ function ResultPopup({ result: r, onContinue, showTutorialHints = false }: {
               +{r.shardCount ?? 1} <strong>{heroDef.name} Shard{(r.shardCount ?? 1) > 1 ? 's' : ''}</strong>
             </span>
             <span className="popup-shard-icon">{heroDef.icon}</span>
+          </div>
+        )}
+
+        {(r.woodEarned ?? 0) > 0 && (
+          <div className="popup-shard-row">
+            <span style={{ fontSize: 20 }}>🪵</span>
+            <span className="popup-shard-text">+{r.woodEarned} <strong>Wood</strong></span>
           </div>
         )}
 

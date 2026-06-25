@@ -1,0 +1,139 @@
+.crafting-root {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px 16px 120px;
+  min-height: 100%;
+  background: #f5e6c0;
+}
+
+.crafting-resource-bar {
+  display: flex; gap: 12px;
+  background: #fdf5e8; border: 2px solid #d4b896;
+  border-radius: 12px; padding: 10px 14px;
+}
+.crafting-resource {
+  display: flex; align-items: center; gap: 6px;
+}
+.crafting-resource-icon { font-size: 18px; }
+.crafting-resource-value { font-size: 16px; font-weight: 800; color: #3a1a05; }
+.crafting-resource-label { font-size: 11px; color: #7a5228; font-weight: 600; }
+
+.crafting-title {
+  font-family: 'Fredoka One', cursive; font-size: 26px;
+  color: #3a1a05; margin: 0; text-align: center;
+}
+.crafting-subtitle {
+  font-size: 12px; color: #7a5228; text-align: center; margin: -8px 0 0;
+}
+
+.crafting-upgrades {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.crafting-card {
+  background: #fdf5e8; border: 2.5px solid #d4b896;
+  border-radius: 14px; padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 2px 2px 0 #c4a060;
+}
+.crafting-card--maxed {
+  border-color: #e7b844; background: #fff8e6;
+}
+.crafting-card--locked {
+  opacity: 0.7;
+}
+
+.crafting-card-header {
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.crafting-card-icon { font-size: 30px; line-height: 1; }
+.crafting-card-info {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.crafting-card-name { font-size: 16px; font-weight: 800; color: #3a1a05; }
+.crafting-card-desc { font-size: 12px; color: #7a5228; line-height: 1.4; }
+
+.crafting-tier-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.crafting-pip {
+  width: 28px; height: 8px; border-radius: 4px;
+  background: #e0c89a; border: 2px solid #c4a060;
+}
+.crafting-pip--filled {
+  background: #e7b844;
+  border-color: #b8820a;
+}
+.crafting-tier-label {
+  font-size: 10px; font-weight: 700; color: #7a5228;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-left: 4px;
+}
+
+.crafting-effect {
+  font-size: 12px; color: #15803d; font-weight: 700;
+  background: #dcfce7; border: 1.5px solid #86efac;
+  border-radius: 8px; padding: 6px 10px;
+}
+
+.crafting-upgrade-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-radius: 10px;
+  background: #3a1a05; color: #f5e6c0;
+  border: 2.5px solid #3a1a05;
+  font-family: 'Fredoka One', cursive; font-size: 15px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #7a5228;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.crafting-upgrade-btn:active {
+  transform: translate(1px,1px); box-shadow: 1px 1px 0 #7a5228;
+}
+.crafting-upgrade-btn--disabled {
+  background: #a0896a; border-color: #a0896a;
+  cursor: not-allowed; box-shadow: none;
+}
+.crafting-cost { font-size: 14px; }
+.crafting-upgrade-label { font-size: 15px; }
+
+.crafting-maxed-badge {
+  text-align: center; font-size: 13px; font-weight: 700;
+  color: #b8820a; letter-spacing: 0.5px;
+}
+
+/* Gift popup */
+.crafting-gift-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(10, 20, 35, 0.75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.crafting-gift-panel {
+  background: #f5e6c0; border: 3px solid #3a1a05;
+  border-radius: 20px; padding: 24px 20px;
+  width: 100%; max-width: 340px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  box-shadow: 4px 4px 0 #7a5228;
+}
+.crafting-gift-icon { font-size: 44px; }
+.crafting-gift-title {
+  font-family: 'Fredoka One', cursive; font-size: 20px;
+  color: #3a1a05; text-align: center; margin: 0;
+}
+.crafting-gift-desc {
+  font-size: 13px; color: #5a3a18; line-height: 1.5;
+  text-align: center; margin: 0;
+}
+.crafting-gift-amount {
+  background: #e8d4a8; border: 2px solid #c4a060;
+  border-radius: 10px; padding: 10px 20px;
+}
+.crafting-gift-wood { font-size: 20px; font-weight: 800; color: #7a5228; }
+.crafting-gift-btn {
+  padding: 12px 24px; border-radius: 12px;
+  background: #3a1a05; color: #f5e6c0;
+  border: 3px solid #3a1a05;
+  font-family: 'Fredoka One', cursive; font-size: 16px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #7a5228;
+}
+.crafting-gift-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #7a5228; }

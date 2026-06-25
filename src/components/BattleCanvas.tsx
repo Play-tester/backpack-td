@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { initBattle, tickBattle, applySpell } from '../battle/engine'
+import type { CraftingState } from '../lib/crafting'
 import {
   BATTLE_H, BATTLE_W, LANE_CX, LANE_W,
   LONG_BATTLE_H, isLongWave,
@@ -38,6 +39,7 @@ interface Props {
   pendingSpellRef?: React.MutableRefObject<PendingSpell | null>
   pendingHeroRef?: React.MutableRefObject<HeroKind | null>
   heroShards?: number   // current shard count for the selected hero — drives stat scaling
+  craftingState?: CraftingState
 }
 
 // ── Path drawing ────────────────────────────────────────────────────────────
@@ -626,10 +628,10 @@ const ENEMY_COLOR: Record<string, string> = {
   shield: '#16a34a',   // Celtic green
 }
 
-export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0 }: Props) {
+export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0, craftingState }: Props) {
   const canvasRef       = useRef<HTMLCanvasElement>(null)
   const scrollRef       = useRef<HTMLDivElement>(null)
-  const stateRef        = useRef<BattleState>(initBattle(deployedTowers, wave, buffs, tutorialLimitEnemies, undefined, heroShards))
+  const stateRef        = useRef<BattleState>(initBattle(deployedTowers, wave, buffs, tutorialLimitEnemies, undefined, heroShards, craftingState))
   const callbackRef     = useRef(onBattleEnd)
   callbackRef.current   = onBattleEnd
   const splashEffects     = useRef<SplashEffect[]>([])
