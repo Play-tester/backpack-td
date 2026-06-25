@@ -15,7 +15,7 @@ import {
 
 // ── Crafting state (set per-battle by initBattle) ─────────────────────────
 // Module-level so spawnEnemy (called from tickBattle) can read it without threading state.
-let _shieldArcherResist = 0.3  // default: 30% damage from archers
+let _shieldArcherResist = 0.2  // default: 20% damage from archers
 
 // ── Zig-zag path segments ──────────────────────────────────────────────────
 interface PSeg { x0: number; y0: number; x1: number; y1: number; len: number }

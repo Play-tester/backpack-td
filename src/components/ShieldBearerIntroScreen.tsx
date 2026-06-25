@@ -21,14 +21,14 @@ export default function ShieldBearerIntroScreen({ onClose }: Props) {
 
         <p className="sb-intro-desc">
           Celtic Shield Bearers have entered the battlefield. Their massive round shields
-          absorb most arrow damage — <strong>archer towers deal only 30% damage</strong> against them.
+          absorb most arrow damage — <strong>archer towers deal only 20% damage</strong> against them.
         </p>
 
         {/* Stat pills */}
         <div className="sb-intro-stats">
           <div className="sb-intro-stat">
             <span className="sb-intro-stat-label">Armor</span>
-            <span className="sb-intro-stat-value sb-intro-stat-value--danger">-70% Arrow DMG</span>
+            <span className="sb-intro-stat-value sb-intro-stat-value--danger">-80% Arrow DMG</span>
           </div>
           <div className="sb-intro-stat">
             <span className="sb-intro-stat-label">Weakness</span>
