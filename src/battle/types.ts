@@ -31,7 +31,7 @@ export function isZigzagWave(wave: number): boolean {
 export const TRIPLE_LANE_XS = [80, 195, 310] as const
 
 export function isTripleLaneWave(wave: number): boolean {
-  return wave === 11  // wave 10 is boss wave — single center lane
+  return wave >= 11 && wave <= 15
 }
 
 // ── Diamond split-merge path (waves 12–13) ──────────────────────────────────
@@ -49,7 +49,7 @@ export const DIAMOND_PATH_B: [number, number][] = [  // right fork
 ]
 
 export function isDiamondWave(wave: number): boolean {
-  return wave >= 12 && wave <= 13
+  return wave >= 16 && wave <= 20
 }
 
 // ── Funnel converging path (waves 14–15) ────────────────────────────────────
@@ -65,14 +65,14 @@ export const FUNNEL_PATH_B: [number, number][] = [  // right lane
 ]
 
 export function isFunnelWave(wave: number): boolean {
-  return wave >= 14 && wave <= 15
+  return wave >= 21 && wave <= 25
 }
 
 // ── Long-map base flag (waves 16+) ───────────────────────────────────────────
 export const LONG_BATTLE_H = 750   // 50% taller than BATTLE_H
 
 export function isLongWave(wave: number): boolean {
-  return wave >= 16
+  return wave >= 26 && wave <= 30
 }
 
 // ── Extended zigzag (waves 16+): same S-curve as battle_2.png, scaled to 750px ───
@@ -93,12 +93,12 @@ export const EXT_ZIGZAG_WAYPOINTS: [number, number][] = [
 ]
 
 export function isExtZigzagWave(wave: number): boolean {
-  return wave >= 16 && wave <= 20
+  return wave >= 26 && wave <= 30
 }
 
 export type BattlePhase = 'fighting' | 'won' | 'lost'
 
-export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm' | 'trojan'
+export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm' | 'trojan' | 'shield'
 
 /** A tower the player has manually placed onto the battle arena */
 export interface DeployedTower {
@@ -118,11 +118,12 @@ export interface Enemy {
   slowTimer: number   // seconds of slow remaining
   pathDist: number    // distance traveled along path (0 = entry point; negative = off-screen)
   pathId:   number    // which path the enemy follows (0 = default/left, 1 = right diamond fork)
-  spawnsOnDeath?: EnemyKind[]  // enemies released when this unit dies (Trojan Horse)
+  spawnsOnDeath?: EnemyKind[]             // enemies released when this unit dies (Trojan Horse)
+  damageResist?: Partial<Record<string, number>>  // tower kind → damage multiplier (e.g. archer → 0.3)
 }
 
 export function isBossWave(wave: number): boolean {
-  return wave === 10
+  return wave === 10 || wave === 20 || wave === 30
 }
 
 export interface BattleTower {

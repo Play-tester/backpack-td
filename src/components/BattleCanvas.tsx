@@ -373,6 +373,7 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   tank:   { src: '/tank_a.png',            frameW: 887, frameH: 443, drawW: 70, drawH: 35 },
   swarm:  { src: '/swarm_a.png',           frameW: 887, frameH: 443, drawW: 36, drawH: 18 },
   trojan: { src: '/trojan_a.png',          frameW: 887, frameH: 443, drawW: 90, drawH: 45 },
+  shield: { src: '/shield_bearer_a.png',   frameW: 887, frameH: 443, drawW: 58, drawH: 29 },
 }
 
 function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
@@ -516,6 +517,18 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
     ctx.fillStyle = 'rgba(255,255,255,0.8)'
     ctx.fillText('❄', e.x, e.y)
   }
+
+  // Shield resistance indicator — small shield icon above HP bar
+  if (e.kind === 'shield') {
+    ctx.font = '8px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    ctx.fillStyle = '#fff'
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'
+    ctx.shadowBlur = 3
+    ctx.fillText('🛡', e.x, y0 - 7)
+    ctx.shadowBlur = 0
+  }
 }
 
 function drawProjectile(ctx: CanvasRenderingContext2D, p: Projectile) {
@@ -610,6 +623,7 @@ const ENEMY_COLOR: Record<string, string> = {
   tank:   '#7c3aed',   // purple — big and slow
   swarm:  '#facc15',   // yellow — tiny and fast
   trojan: '#8b5e3c',   // wooden brown
+  shield: '#16a34a',   // Celtic green
 }
 
 export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0 }: Props) {

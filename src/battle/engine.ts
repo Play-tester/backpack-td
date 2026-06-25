@@ -106,6 +106,7 @@ const ENEMY_STATS: Record<EnemyKind, { hp: number; speed: number; gold: number; 
   tank:   { hp: 120, speed: 50,  gold: 1 },  // slow, tanky
   swarm:  { hp: 35,  speed: 140, gold: 1, group: 3 },  // tiny, always spawns as a group of 3
   trojan: { hp: 800, speed: 30,  gold: 10 }, // boss — high HP, very slow, releases grunts on death
+  shield: { hp: 110, speed: 55,  gold: 2  }, // Celtic shield bearer — absorbs 70% archer damage
 }
 
 // Enemies released when the Trojan Horse dies
@@ -125,10 +126,14 @@ const WAVE_TABLE: WaveConfig[] = [
 ]
 
 function getWaveConfig(wave: number): WaveConfig {
-  if (wave === 10) return { count: 1, kinds: ['trojan'] }  // boss wave
+  if (wave === 10) return { count: 1, kinds: ['trojan'] }  // World 1 boss
+  if (wave === 20) return { count: 1, kinds: ['trojan'] }  // World 2 boss (placeholder until W2 boss designed)
+  if (wave === 30) return { count: 1, kinds: ['trojan'] }  // World 3 boss (placeholder)
   if (wave <= WAVE_TABLE.length) return WAVE_TABLE[wave - 1]
-  // wave 6+: all four types, +2 enemies per wave
-  return { count: 8 + (wave - 5) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm'] }
+  // waves 6–9: all four base types, +2 per wave
+  if (wave <= 10) return { count: 8 + (wave - 5) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm'] }
+  // waves 11+: add shield bearer to the mix, +2 per wave
+  return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield'] }
 }
 
 /** Build a shuffled spawn sequence with the correct count of each kind */
@@ -198,6 +203,7 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
     pathId,
   }
   if (kind === 'trojan') enemy.spawnsOnDeath = [...TROJAN_RELEASE]
+  if (kind === 'shield') enemy.damageResist = { archer: 0.3 }  // takes only 30% from archers
   return enemy
 }
 
@@ -531,11 +537,13 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
       // Projectile reached target — apply damage now
       const hit = alive.find(e => e.id === p.targetId)
       if (hit) {
-        hit.hp -= p.damage
+        const resist = hit.damageResist?.[p.kind] ?? 1
+        hit.hp -= Math.round(p.damage * resist)
         if (p.splashRadius > 0) {
           for (const e of alive) {
             if (e.id !== p.targetId && Math.abs(e.y - p.ty) <= p.splashRadius) {
-              e.hp -= Math.round(p.damage * 0.5)
+              const splashResist = e.damageResist?.[p.kind] ?? 1
+              e.hp -= Math.round(p.damage * 0.5 * splashResist)
             }
           }
         }
@@ -579,7 +587,7 @@ export function applySpell(state: BattleState, kind: string, x: number, y: numbe
     const dx = e.x - x
     const dy = e.y - y
     if (Math.sqrt(dx * dx + dy * dy) <= FIREBALL_RADIUS) {
-      const newHp = e.hp - FIREBALL_DAMAGE
+      const newHp = e.hp - Math.round(FIREBALL_DAMAGE * (e.damageResist?.['fireball'] ?? 1))
       if (newHp <= 0) {
         result.kills++
         result.goldEarned += ENEMY_STATS[e.kind].gold
