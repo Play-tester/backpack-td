@@ -1,7 +1,7 @@
 .crafting-root {
-  display: flex; flex-direction: column; gap: 14px;
-  padding: 16px 16px 120px;
-  min-height: 100%;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 14px 16px;
+  flex: 1 1 0; min-height: 0;   /* fill remaining height, no scroll */
   background: #f5e6c0;
 }
 
@@ -18,11 +18,11 @@
 .crafting-resource-label { font-size: 11px; color: #7a5228; font-weight: 600; }
 
 .crafting-title {
-  font-family: 'Fredoka One', cursive; font-size: 26px;
+  font-family: 'Fredoka One', cursive; font-size: 22px;
   color: #3a1a05; margin: 0; text-align: center;
 }
 .crafting-subtitle {
-  font-size: 12px; color: #7a5228; text-align: center; margin: -8px 0 0;
+  font-size: 11px; color: #7a5228; text-align: center; margin: -6px 0 0;
 }
 
 .crafting-upgrades {
@@ -31,8 +31,8 @@
 
 .crafting-card {
   background: #fdf5e8; border: 2.5px solid #d4b896;
-  border-radius: 14px; padding: 14px;
-  display: flex; flex-direction: column; gap: 10px;
+  border-radius: 14px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
   box-shadow: 2px 2px 0 #c4a060;
 }
 .crafting-card--maxed {
@@ -77,7 +77,7 @@
 
 .crafting-upgrade-btn {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; border-radius: 10px;
+  padding: 10px 16px; border-radius: 10px;
   background: #3a1a05; color: #f5e6c0;
   border: 2.5px solid #3a1a05;
   font-family: 'Fredoka One', cursive; font-size: 15px;

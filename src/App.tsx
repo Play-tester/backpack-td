@@ -152,6 +152,8 @@ export default function App() {
   const [showHeroesTabHint, setShowHeroesTabHint] = useState(false)
   const hasSeenShard = useRef(savedGame?.hasSeenShard ?? false)
   const hasSeenFrost = useRef(savedGame?.hasSeenFrost ?? false)
+  // Show World 1 complete screen only once — when the player first beats wave 10
+  const hasSeenWorld1Complete = useRef(savedGame ? (savedGame.wave > 10) : false)
   const buffs = mergeBuffs(permBuffs, computeBuffs(buffGrants))
   const hasAcademy = [...placedItems.values()].some(p => p.item.def.kind === 'academy')
 
@@ -540,8 +542,9 @@ export default function App() {
       setShowShieldIntro(true)
       return
     }
-    // Wave 10 win = World 1 complete — go to completion screen
-    if (wave > 10) {
+    // Wave 10 win = World 1 complete — show screen only the first time
+    if (wave > 10 && !hasSeenWorld1Complete.current) {
+      hasSeenWorld1Complete.current = true
       setPhase('world1-complete')
     } else {
       setPhase('trade')
@@ -862,7 +865,7 @@ export default function App() {
   // ── Crafting tab ──────────────────────────────────────────────────────────
   if (activeTab === 'crafting') {
     return (
-      <div className="game-container" style={{ overflowY: 'auto' }}>
+      <div className="game-container" style={{ display: 'flex', flexDirection: 'column' }}>
         <CraftingScreen
           gold={gold}
           wood={wood}
