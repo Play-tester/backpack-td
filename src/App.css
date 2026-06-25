@@ -273,6 +273,43 @@
   transition: transform 0.1s;
 }
 .settings-close:hover { background: #c02020; transform: translateY(-1px); }
+
+/* ── Dev Tools (temporary) ─────────────────────────────────────────────────── */
+.settings-dev-section {
+  border: 2px dashed #e7b844;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  background: #fffde8;
+}
+.settings-dev-label {
+  font-size: 11px; font-weight: 800; color: #b8820a;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.settings-dev-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-dev-hint {
+  font-size: 12px; color: #5a3a18; white-space: nowrap;
+}
+.settings-dev-btn {
+  background: #e7b844; color: #3a1a05;
+  border: 2px solid #b8820a; border-radius: 8px;
+  padding: 7px 14px;
+  font-family: 'Fredoka One', cursive; font-size: 14px;
+  cursor: pointer; width: 100%;
+  box-shadow: 2px 2px 0 #b8820a;
+  transition: transform 0.1s;
+}
+.settings-dev-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 #b8820a; }
+.settings-dev-select {
+  flex: 1;
+  background: #fff8e6; color: #3a1a05;
+  border: 2px solid #b8820a; border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'Fredoka One', cursive; font-size: 14px;
+  cursor: pointer;
+}
 .shop-zone {
   min-height: 260px;
   height: auto;

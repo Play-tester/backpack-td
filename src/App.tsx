@@ -908,6 +908,8 @@ export default function App() {
         onPickBasePerk={applyBasePerkChoice}
         onReroll={handleReroll}
         onSellItem={handleSellItem}
+        onCheatGold={() => setGold(g => g + 100)}
+        onCheatWave={w => setWave(w)}
       />
     </DragProvider>
   )
@@ -931,6 +933,7 @@ function TradeUI({
   musicVolume, onMusicVolumeChange,
   onInfoIconTap,
   onStartBattle, onPickUpgrade, onPickBasePerk, onReroll, onSellItem,
+  onCheatGold, onCheatWave,
 }: {
   gold: number; mana: number; manaNeeded: number; level: number; wave: number
   xp: number; xpNeeded: number; baseLevel: number
@@ -953,6 +956,8 @@ function TradeUI({
   onPickBasePerk: (p: BasePerk) => void
   onReroll: () => void
   onSellItem: (itemId: string) => void
+  onCheatGold: () => void
+  onCheatWave: (w: number) => void
 }) {
   const { activeDrag } = useDrag()
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
@@ -1205,17 +1210,42 @@ function TradeUI({
                 <span className="settings-slider-val">{musicVolume}</span>
               </div>
             </div>
-            <button
-              className="settings-reset"
-              onClick={() => {
-                if (confirm('Reset all progress and restart from wave 1?')) {
-                  clearSave()
-                  window.location.reload()
-                }
-              }}
-            >
-              🗑 Reset Progress
-            </button>
+
+            {/* ── DEV TOOLS (temporary) ── */}
+            <div className="settings-dev-section">
+              <div className="settings-dev-label">🛠 Dev Tools</div>
+              <div className="settings-dev-row">
+                <button className="settings-dev-btn" onClick={onCheatGold}>
+                  💰 +100 Gold
+                </button>
+              </div>
+              <div className="settings-dev-row">
+                <span className="settings-dev-hint">Jump to wave:</span>
+                <select
+                  className="settings-dev-select"
+                  value={wave}
+                  onChange={e => { onCheatWave(Number(e.target.value)); setShowSettings(false) }}
+                >
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map(w => (
+                    <option key={w} value={w}>Wave {w}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="settings-dev-row">
+                <button
+                  className="settings-reset"
+                  style={{ width: '100%' }}
+                  onClick={() => {
+                    if (confirm('Reset all progress and restart from wave 1?')) {
+                      clearSave()
+                      window.location.reload()
+                    }
+                  }}
+                >
+                  🗑 Reset Progress
+                </button>
+              </div>
+            </div>
             <button className="settings-close" onClick={() => setShowSettings(false)}>✕ Close</button>
           </div>
         </div>
