@@ -738,10 +738,13 @@ export default function App() {
     const unlockedHeroKinds = (Object.keys(heroProgress) as HeroKind[]).filter(k => heroProgress[k].unlocked)
     const currentDef = selectedHero ? HERO_DEFS[selectedHero] : null
 
+    // Pulse the hero picker if heroes are available but none selected yet
+    const heroPickerPulse = unlockedHeroKinds.length > 0 && !selectedHero
+
     const heroPicker = unlockedHeroKinds.length > 0 ? (
       <div className="hero-bar">
         <button
-          className="hero-toggle-btn"
+          className={`hero-toggle-btn${heroPickerPulse ? ' nav-pulse' : ''}`}
           onClick={() => setHeroMenuOpen(o => !o)}
         >
           <span className="hero-btn-icon">{currentDef?.icon ?? '⚔️'}</span>

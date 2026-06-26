@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { initBattle, tickBattle, applySpell } from '../battle/engine'
+import { initBattle, tickBattle, applySpell, getPathTotalLen, heroPos } from '../battle/engine'
 import type { CraftingState } from '../lib/crafting'
 import {
   BATTLE_H, BATTLE_W, LANE_CX, LANE_W,
@@ -673,16 +673,21 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
         pendingHeroRef.current = null
         const def = HERO_DEFS[heroKind]
         const effStats = getEffectiveStats(def, heroShards)
+        // Start hero at bottom of path
+        const startDist = getPathTotalLen(wave)
+        const [hx, hy] = heroPos(wave, startDist, 0)
         const heroState: BattleHero = {
           kind:            heroKind,
-          x:               LANE_CX,
-          y:               BATTLE_H - 40,
+          x:               hx,
+          y:               hy,
           hp:              effStats.hp,
           maxHp:           effStats.hp,
           abilityCooldown: def.ability.cooldown,
           attackCooldown:  0,
           stunTimer:       0,
           dead:            false,
+          pathDist:        startDist,
+          pathId:          0,
         }
         stateRef.current = { ...stateRef.current, hero: heroState }
       }

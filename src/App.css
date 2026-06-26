@@ -378,6 +378,11 @@
 }
 .hero-toggle-btn:active { box-shadow: 1px 1px 0 #3a1a05; transform: translate(2px,2px); }
 .hero-toggle-btn.hero-deployed { border-color: #4ade80; background: #d1fae5; cursor: default; }
+.hero-toggle-btn.nav-pulse {
+  border-color: #f0c030;
+  background: #fffbe8;
+  box-shadow: 3px 3px 0 #3a1a05, 0 0 0 3px rgba(240,192,48,0.45);
+}
 .hero-btn-icon  { font-size: 22px; line-height: 1; }
 .hero-btn-label { font-size: 11px; font-weight: 700; color: #3a1a05; flex: 1; text-align: left; }
 .hero-btn-caret { font-size: 9px; color: #3a1a05; opacity: 0.6; }

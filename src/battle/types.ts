@@ -183,6 +183,8 @@ export interface BattleHero {
   attackCooldown:  number   // seconds until next attack
   stunTimer:       number   // seconds remaining stunned (from own Shield Bash)
   dead:            boolean
+  pathDist:        number   // distance along path (hero walks from bottom, counts DOWN)
+  pathId:          number   // which fork (for diamond / funnel maps)
 }
 
 export interface BattleState {

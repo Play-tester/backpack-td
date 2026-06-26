@@ -84,6 +84,25 @@ function posOnFunnelPath(pathId: number, dist: number): [number, number] {
   return posOnSegs(pathId === 0 ? FUNNEL_SEGS_A : FUNNEL_SEGS_B, dist)
 }
 
+/** Total path length for each layout — used to start hero at the bottom */
+export function getPathTotalLen(wave: number): number {
+  if (isExtZigzagWave(wave)) return EXT_ZIGZAG_TOTAL_LEN
+  if (isZigzagWave(wave))    return ZIGZAG_TOTAL_LEN
+  if (isDiamondWave(wave))   return DIAMOND_TOTAL_LEN
+  if (isFunnelWave(wave))    return FUNNEL_TOTAL_LEN
+  return BATTLE_H  // straight lane
+}
+
+/** Hero x/y position from a pathDist (same coord system as enemies) */
+export function heroPos(wave: number, pathDist: number, pathId: number): [number, number] {
+  if (isExtZigzagWave(wave)) return posOnExtZigzag(pathDist)
+  if (isZigzagWave(wave))    return posOnPath(pathDist)
+  if (isDiamondWave(wave))   return posOnDiamondPath(pathId, pathDist)
+  if (isFunnelWave(wave))    return posOnFunnelPath(pathId, pathDist)
+  // Straight lane — hero walks up the center
+  return [LANE_CX, pathDist]
+}
+
 /** Compute (x, y) at a given distance along the zig-zag path.
  *  Negative dist extrapolates backwards from the entry segment. */
 function posOnPath(dist: number): [number, number] {
@@ -265,16 +284,20 @@ export function initBattle(
   if (heroKind) {
     const def = HERO_DEFS[heroKind]
     const effStats = getEffectiveStats(def, heroShards ?? 0)
+    const startDist = getPathTotalLen(wave)
+    const [hx, hy]  = heroPos(wave, startDist, 0)
     hero = {
       kind:            heroKind,
-      x:               LANE_CX,
-      y:               BATTLE_H - 40,
+      x:               hx,
+      y:               hy,
       hp:              effStats.hp,
       maxHp:           effStats.hp,
       abilityCooldown: def.ability.cooldown,
       attackCooldown:  0,
       stunTimer:       0,
       dead:            false,
+      pathDist:        startDist,
+      pathId:          0,
     }
   }
 
@@ -399,10 +422,12 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
 
     const blocked = closestEnemy !== null && closestDist <= heroDef.attackRange
 
-    // Move toward enemies (upward) unless blocked by one in melee range
+    // Move along the path toward enemies (pathDist decreases = moves toward top)
     if (!blocked) {
-      hero.y -= heroDef.speed * dt   // move up (toward enemies at top of screen)
-      hero.y  = Math.max(0, hero.y)  // don't go above screen
+      hero.pathDist = Math.max(0, hero.pathDist - heroDef.speed * dt)
+      const [hx, hy] = heroPos(prev.wave, hero.pathDist, hero.pathId)
+      hero.x = hx
+      hero.y = hy
     }
 
     // Block enemies that have reached the hero — stop them from advancing past
@@ -411,8 +436,7 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
         const dx = e.x - hero.x, dy = e.y - hero.y
         const d  = Math.sqrt(dx * dx + dy * dy)
         if (d <= heroDef.attackRange + 10) {
-          // push enemy back to just outside hero range
-          e.pathDist -= heroDef.speed * dt  // enemy can't advance
+          e.pathDist = Math.max(0, e.pathDist - heroDef.speed * dt)  // enemy can't advance
         }
       }
 
