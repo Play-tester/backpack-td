@@ -358,7 +358,7 @@ function drawTower(ctx: CanvasRenderingContext2D, t: BattleTower) {
 // ── Enemy sprite sheets ─────────────────────────────────────────────────────
 // All sheets: vertical strip, 4 frames, each frame is a square (W = H/4)
 const FRAME_COUNT = 4
-const ANIM_FPS    = 6   // frames per second for walk cycle
+const ANIM_FPS    = 10  // frames per second for walk cycle (was 6 — smoother animation)
 
 interface EnemySheet {
   src:    string
@@ -453,7 +453,8 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
     const y0 = e.y - EH / 2
     const img = getCachedImage(sheet.src)
     if (img) {
-      const frame = Math.floor(elapsed * ANIM_FPS) % FRAME_COUNT
+      const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
+      const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
       const sy = frame * sheet.frameH
       ctx.drawImage(img, 0, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
     } else {
@@ -486,7 +487,9 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
   if (sheet) {
     const img = getCachedImage(sheet.src)
     if (img) {
-      const frame = Math.floor(elapsed * ANIM_FPS) % FRAME_COUNT
+      // Phase offset per enemy so groups don't animate in lockstep
+      const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
+      const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
       const sy    = frame * sheet.frameH
       ctx.drawImage(img, 0, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
     } else {
@@ -643,6 +646,8 @@ export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUF
   useEffect(() => {
     const canvas = canvasRef.current!
     const ctx    = canvas.getContext('2d')!
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
     let rafId: number
     let lastTime: number | null = null
 
