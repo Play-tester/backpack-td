@@ -135,7 +135,7 @@ export function getScaledRange(item: Item): number {
   return base * getMilitaryRangeMultiplier(item.tier)
 }
 
-const BANK_GOLD = [4, 8, 16, 32, 64, 100]  // tier 1–6, capped at 100g
+const BANK_GOLD = [5, 10, 20, 30, 50, 100]  // tier 1–6, capped at 100g
 
 export function getScaledGold(item: Item): number {
   if (item.def.kind === 'shop') {
