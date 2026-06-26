@@ -54,16 +54,16 @@ const SLOTS_TRIPLELANE: TowerSlot[] = [
   { id: 's8', x: 138, y: 335 },  // left gap — mid-lower, cross-covers left & centre lanes
 ]
 
-// Diamond (battle_4.png): verticals at x=90 (left) and x=300 (right), y=120–380.
-// Safe: far left (x≈40), center inside diamond (x=195, y=250), far right (x≈350), center top/bottom.
+// Diamond (battle_4.png): paths measured from image.
+// Splits at y≈60, left arm peaks at x≈45 y≈230, right arm at x≈335 y≈230, merges at y≈430.
 const SLOTS_DIAMOND: TowerSlot[] = [
-  { id: 's1', x: 195, y: 50  },  // center-top
-  { id: 's2', x: 40,  y: 250 },  // left-outer
-  { id: 's3', x: 195, y: 250 },  // center inside diamond
-  { id: 's4', x: 350, y: 250 },  // right-outer
-  { id: 's5', x: 195, y: 450 },  // center-bottom
-  { id: 's6', x: 40,  y: 130 },  // outer-left near fork — covers left arm entry
-  { id: 's7', x: 350, y: 380 },  // outer-right near merge — covers right arm exit
+  { id: 's1', x: 195, y: 30  },  // center-top (above split)
+  { id: 's2', x: 195, y: 250 },  // center inside diamond (between the two arms)
+  { id: 's3', x: 195, y: 460 },  // center-bottom (below merge)
+  { id: 's4', x: 20,  y: 150 },  // far-left outer, upper arm
+  { id: 's5', x: 370, y: 150 },  // far-right outer, upper arm
+  { id: 's6', x: 20,  y: 350 },  // far-left outer, lower arm
+  { id: 's7', x: 370, y: 350 },  // far-right outer, lower arm
 ]
 
 // Funnel (battle_5.png): left x=110, right x=280, converge to center at y=300.

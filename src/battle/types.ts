@@ -34,18 +34,22 @@ export function isTripleLaneWave(wave: number): boolean {
   return wave >= 11 && wave <= 15
 }
 
-// ── Diamond split-merge path (waves 12–13) ──────────────────────────────────
+// ── Diamond split-merge path (waves 16–20) ───────────────────────────────────
+// Coordinates measured from battle_4.png (853×1844px mapped to 390×500 canvas)
+// Path splits at ~y=60, peaks wide at y=230 (left≈45, right≈335), merges at ~y=430
 export const DIAMOND_PATH_A: [number, number][] = [  // left fork
-  [195, -34],
-  [90,  120],
-  [90,  380],
-  [195, 534],
+  [195, -34],  // enter top-center (off screen)
+  [195,  60],  // split point — path diverges here
+  [ 45, 230],  // widest left point
+  [195, 430],  // merge point
+  [195, 534],  // exit bottom-center (off screen)
 ]
 export const DIAMOND_PATH_B: [number, number][] = [  // right fork
-  [195, -34],
-  [300, 120],
-  [300, 380],
-  [195, 534],
+  [195, -34],  // enter top-center (off screen)
+  [195,  60],  // split point
+  [335, 230],  // widest right point
+  [195, 430],  // merge point
+  [195, 534],  // exit bottom-center (off screen)
 ]
 
 export function isDiamondWave(wave: number): boolean {
