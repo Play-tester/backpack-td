@@ -30,16 +30,16 @@ const SLOTS_5: TowerSlot[] = [
 ]
 
 // Zigzag (battle_2.png): LEFT x=155, RIGHT x=225, turn1 y=165, turn2 y=335.
-// Left strip x=129–181; right strip x=199–251.
-// Safe adjacent positions: x=107 (22px from left strip edge), x=273 (22px from right strip edge).
+// Path half-width 26px + frost clearance 62px = 88px min from path center.
+// Left safe ≤ x=67; right safe ≥ x=313.
 const SLOTS_ZIGZAG: TowerSlot[] = [
-  { id: 's1', x: 273, y: 83  },  // right of right strip — covers top right path
-  { id: 's2', x: 107, y: 250 },  // left of left strip — covers middle left path
-  { id: 's3', x: 273, y: 250 },  // right of right strip — flanks both top & bottom right segments
-  { id: 's4', x: 107, y: 415 },  // left side — covers bottom section from left
-  { id: 's5', x: 273, y: 415 },  // right of right strip — covers bottom right path
-  { id: 's6', x: 107, y: 83  },  // left-top — covers path before first turn from left
-  { id: 's7', x: 273, y: 165 },  // right at turn1 — maximises coverage at the bend
+  { id: 's1', x: 313, y: 83  },  // right outer — covers top right strip
+  { id: 's2', x: 67,  y: 250 },  // left outer — covers middle left strip
+  { id: 's3', x: 313, y: 250 },  // right outer — flanks both top & bottom right segments
+  { id: 's4', x: 67,  y: 415 },  // left outer — covers bottom-left strip
+  { id: 's5', x: 313, y: 415 },  // right outer — covers bottom-right strip
+  { id: 's6', x: 67,  y: 83  },  // left outer-top — covers path before first turn
+  { id: 's7', x: 313, y: 165 },  // right outer at turn1 — maximises coverage at the bend
 ]
 
 // Triple-lane (battle_3.png): lanes at x=80, 195, 310 (width 52). Gaps centered at x=137 and x=253.
@@ -54,43 +54,47 @@ const SLOTS_TRIPLELANE: TowerSlot[] = [
   { id: 's8', x: 138, y: 335 },  // left gap — mid-lower, cross-covers left & centre lanes
 ]
 
-// Diamond (battle_4.png): paths measured from image.
-// Splits at y≈60, left arm peaks at x≈45 y≈230, right arm at x≈335 y≈230, merges at y≈430.
+// Diamond (battle_4.png): center path y<60 and y>430 at x=195; arms at x=45 (left) and x=335 (right) at y=230.
+// Center (x=195) is only safe inside the diamond (y=60–430) where it's 150px from each arm.
+// Slots s1/s3 moved off center path to outer sides.
 const SLOTS_DIAMOND: TowerSlot[] = [
-  { id: 's1', x: 195, y: 30  },  // center-top (above split)
-  { id: 's2', x: 195, y: 250 },  // center inside diamond (between the two arms)
-  { id: 's3', x: 195, y: 460 },  // center-bottom (below merge)
+  { id: 's1', x: 60,  y: 30  },  // left outer — above split, flanks the entry path
+  { id: 's2', x: 195, y: 245 },  // center inside diamond (150px from each arm)
+  { id: 's3', x: 330, y: 460 },  // right outer — below merge, flanks the exit path
   { id: 's4', x: 20,  y: 150 },  // far-left outer, upper arm
   { id: 's5', x: 370, y: 150 },  // far-right outer, upper arm
   { id: 's6', x: 20,  y: 350 },  // far-left outer, lower arm
   { id: 's7', x: 370, y: 350 },  // far-right outer, lower arm
 ]
 
-// Funnel (battle_5.png): left x=110, right x=280, converge to center at y=300.
+// Funnel (battle_5.png): left x=110, right x=280, converge to center (x=195) at y=300–534.
+// Above y=300: center (x=195) is 85px from each lane — safe (>62). Below y=300 paths converge, center unsafe.
+// s7 replaced with outer-side slot below convergence to avoid the merged lane.
 const SLOTS_FUNNEL: TowerSlot[] = [
-  { id: 's1', x: 195, y: 80  },  // center-top, between lanes
+  { id: 's1', x: 195, y: 80  },  // center-top, between lanes (85px from each — safe)
   { id: 's2', x: 40,  y: 200 },  // left-outer
   { id: 's3', x: 350, y: 200 },  // right-outer
-  { id: 's4', x: 40,  y: 400 },  // left-outer, below convergence
-  { id: 's5', x: 350, y: 400 },  // right-outer, below convergence
-  { id: 's6', x: 195, y: 250 },  // center between lanes — fires into both paths simultaneously
-  { id: 's7', x: 195, y: 430 },  // center below convergence — dominates the merged lane
+  { id: 's4', x: 40,  y: 430 },  // left-outer, below convergence
+  { id: 's5', x: 350, y: 430 },  // right-outer, below convergence
+  { id: 's6', x: 195, y: 250 },  // center between lanes — fires into both paths simultaneously (safe above convergence)
+  { id: 's7', x: 40,  y: 320 },  // left outer near convergence point — covers merged stream
 ]
 
 // Extended zigzag (battle_2.png scaled to 750px): LEFT=155, RIGHT=225, turn1 y=248, turn2 y=503.
-// Left strip x=129–181; right strip x=199–251.
-// Safe adjacent positions: x=107 (left side) and x=273 (right side).
+// Path half-width 26px + frost clearance 62px = 88px min from path center.
+// Left safe ≤ x=67; right safe ≥ x=313.
+// Turns are horizontal segments: avoid placing slots ON the horizontal strip at turn y-values.
 const SLOTS_EXT_ZIGZAG: TowerSlot[] = [
-  { id: 's1', x: 107, y: 120 },  // left side — top section
-  { id: 's2', x: 273, y: 120 },  // right side — covers top right strip
-  { id: 's3', x: 107, y: 375 },  // left of left strip — covers middle left segment
-  { id: 's4', x: 273, y: 375 },  // right of right strip — flanks middle section
-  { id: 's5', x: 107, y: 503 },  // left side — at turn2, covers transition
-  { id: 's6', x: 273, y: 503 },  // right side — at turn2
-  { id: 's7', x: 107, y: 630 },  // left side — covers lower right strip from left
-  { id: 's8', x: 273, y: 630 },  // right of right strip — covers bottom section
-  { id: 's9', x: 195, y: 248 },  // center at turn1 — covers both strips at the bend
-  { id: 's10',x: 195, y: 503 },  // center at turn2 — covers both strips at the bend
+  { id: 's1',  x: 67,  y: 120 },  // left outer — top section
+  { id: 's2',  x: 313, y: 120 },  // right outer — covers top right strip
+  { id: 's3',  x: 67,  y: 375 },  // left outer — covers middle left segment
+  { id: 's4',  x: 313, y: 375 },  // right outer — flanks middle section
+  { id: 's5',  x: 67,  y: 503 },  // left outer — at turn2 height
+  { id: 's6',  x: 313, y: 503 },  // right outer — at turn2 height
+  { id: 's7',  x: 67,  y: 630 },  // left outer — lower section
+  { id: 's8',  x: 313, y: 630 },  // right outer — lower section
+  { id: 's9',  x: 67,  y: 248 },  // left outer at turn1 — flanks the horizontal bend from outside
+  { id: 's10', x: 313, y: 248 },  // right outer at turn1 — flanks the horizontal bend from outside
 ]
 
 // ── Path segments for the prep-phase SVG overlay ──────────────────────────

@@ -184,7 +184,7 @@ function buildSpawnQueue(config: WaveConfig): EnemyKind[] {
 }
 
 // ── Tower kind stats ───────────────────────────────────────────────────────
-export const KIND_RANGE: Record<string, number> = { archer: 115, cannon: 165, frost: 100 }
+export const KIND_RANGE: Record<string, number> = { archer: 80, cannon: 115, frost: 70 }
 const KIND_SPLASH: Record<string, number>   = { cannon: 32 }
 const KIND_SLOW_DUR: Record<string, number> = { frost: 2.5 }
 
@@ -255,7 +255,7 @@ export function initBattle(
       y,
       damage:       Math.round((item.def.damage ?? 10) * damageMult * buffs.damageBonus),
       attackSpeed:  (item.def.attackSpeed ?? 1) * buffs.speedBonus,
-      rangePx:      (KIND_RANGE[item.def.kind] ?? 120) * rangeMult * buffs.rangeBonus,
+      rangePx:      (KIND_RANGE[item.def.kind] ?? 84) * rangeMult * buffs.rangeBonus,
       cooldown:     0,
       color:        item.def.color,
       image:        getItemImage(item),
