@@ -122,6 +122,30 @@ function pathSegments(wave: number): [number, number][][] {
   return [[[LANE_CX, -34], [LANE_CX, H + 34]]]
 }
 
+// ── Visual nudge: shift a frost tower's image away from the nearest path ──
+// Slot position (hitbox, range circle) stays unchanged; only the drawn image moves.
+function getPathNudge(slot: TowerSlot, wave: number, nudgePx = 20): { dx: number; dy: number } {
+  const segs = pathSegments(wave)
+  let bestDist = Infinity, bestNx = slot.x, bestNy = slot.y
+  for (const pts of segs) {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]
+      const sdx = x1 - x0, sdy = y1 - y0
+      const len2 = sdx * sdx + sdy * sdy
+      const t = len2 > 0 ? Math.max(0, Math.min(1, ((slot.x - x0) * sdx + (slot.y - y0) * sdy) / len2)) : 0
+      const nx = x0 + t * sdx, ny = y0 + t * sdy
+      const dist = Math.hypot(slot.x - nx, slot.y - ny)
+      if (dist < bestDist) { bestDist = dist; bestNx = nx; bestNy = ny }
+    }
+  }
+  if (bestDist < 1) return { dx: 0, dy: 0 }
+  const scale = nudgePx / bestDist
+  return {
+    dx: Math.round((slot.x - bestNx) * scale),
+    dy: Math.round((slot.y - bestNy) * scale),
+  }
+}
+
 function getSlots(wave: number): TowerSlot[] {
   if (isExtZigzagWave(wave))  return SLOTS_EXT_ZIGZAG
   if (isFunnelWave(wave))     return SLOTS_FUNNEL
@@ -302,6 +326,8 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
             : { rows: 1, cols: 1 }
           const slotW = sCols * BASE
           const slotH = sRows * BASE
+          const isFrost = item?.def.kind === 'frost'
+          const nudge = isFrost ? getPathNudge(slot, wave) : { dx: 0, dy: 0 }
           return (
             <div
               key={slot.id}
@@ -312,7 +338,8 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
               {item && (
                 <div
                   className={`slot-tower${isDraggingFromHere ? ' is-dragging' : ''}`}
-                  style={{ background: item.def.color, width: slotW, height: slotH }}
+                  style={{ background: item.def.color, width: slotW, height: slotH,
+                    ...(isFrost && (nudge.dx || nudge.dy) ? { transform: `translate(${nudge.dx}px, ${nudge.dy}px)` } : {}) }}
                   onPointerDown={e => startSlotDrag(e, item, slot.id)}
                 >
                   {getItemImage(item)
