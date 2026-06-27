@@ -205,10 +205,11 @@ export function pickThreeBasePerks(toLevel: number, isGridMaxed: boolean = false
     return true
   })
 
-  // First base level-up (toLevel === 2): guarantee unlock_cell appears (unless maxed)
-  if (toLevel === 2 && !isGridMaxed) {
+  // First 3 base level-ups (toLevel 2, 3, 4): always include "Expand Backpack" (unlock_cell)
+  // so the player always has the option to grow their grid early on.
+  if (toLevel <= 4 && !isGridMaxed) {
     const unlockPerk = ALL_BASE_PERKS.find(p => p.kind === 'unlock_cell')!
-    const others = ALL_BASE_PERKS.filter(p => p.kind !== 'unlock_cell')
+    const others = availablePerks.filter(p => p.kind !== 'unlock_cell')
       .sort(() => Math.random() - 0.5)
     return [unlockPerk, others[0], others[1]]
   }

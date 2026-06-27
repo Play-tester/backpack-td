@@ -53,9 +53,8 @@ function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: numb
 }
 
 let _shopId = 1
-const ALL_KINDS:         ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'bank', 'shop']
-const MILITARY_KINDS:    ItemKind[] = ['archer', 'cannon', 'frost', 'ballista']
-const EARLY_MIL_KINDS:   ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista before wave 13
+const ALL_KINDS:       ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'bank', 'shop']
+const EARLY_MIL_KINDS: ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista before wave 13 / research
 
 /** Purchase cost for an item of a given kind and tier */
 export function getItemCost(kind: ItemKind, tier: number): number {
