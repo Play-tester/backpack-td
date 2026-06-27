@@ -14,6 +14,16 @@ export interface CraftingUpgrade {
 }
 
 export const CRAFTING_UPGRADES: Record<string, CraftingUpgrade> = {
+  ballista_research: {
+    id:          'ballista_research',
+    name:        'Ballista Tower',
+    description: 'Unlock the Ballista — a powerful siege weapon that excels against aerial enemies. Once researched, Ballistas appear in the shop.',
+    icon:        '🏹',
+    maxLevel:    1,
+    costGold:    (_level) => 30,
+    costMats:    (_level) => ({ wood: 30 }),
+    effect:      (_level) => 'Ballista appears in the shop (full dmg vs aerial, 50% vs ground)',
+  },
   piercing_arrows: {
     id:          'piercing_arrows',
     name:        'Piercing Arrows',
@@ -43,6 +53,10 @@ export function getInitialCraftingState(): CraftingState {
  *  Level 2: 60%  (shield absorbs 40%)
  *  Level 3: 80%  (shield absorbs 20%)
  */
+export function isBallistaUnlocked(craftingState: CraftingState): boolean {
+  return (craftingState['ballista_research'] ?? 0) >= 1
+}
+
 export function getPiercingArrowsResist(craftingState: CraftingState): number {
   const level = craftingState['piercing_arrows'] ?? 0
   return [0.2, 0.4, 0.6, 0.8][level] ?? 0.8

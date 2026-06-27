@@ -48,12 +48,13 @@ export function shapeDims(size: ItemSize): { rows: number; cols: number } {
 export type ItemCategory = 'military' | 'economic' | 'special'
 
 export type ItemKind =
-  | 'archer'   // military – fast, single target
-  | 'cannon'   // military – slow, splash
-  | 'frost'    // military – slow effect
-  | 'bank'     // economic – flat gold per round
-  | 'shop'     // economic – small, cheap, earns 1 gold per win
-  | 'academy'  // special  – 2×2 building, unlocks spells
+  | 'archer'    // military – fast, single target
+  | 'cannon'    // military – slow, splash
+  | 'frost'     // military – slow effect
+  | 'ballista'  // military – slow, high damage, targets aerial only
+  | 'bank'      // economic – flat gold per round
+  | 'shop'      // economic – small, cheap, earns 1 gold per win
+  | 'academy'   // special  – 2×2 building, unlocks spells
 
 // ── Static item definition (the "blueprint") ──────────────────────────────
 export interface ItemDef {

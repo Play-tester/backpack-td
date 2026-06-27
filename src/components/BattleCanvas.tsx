@@ -376,6 +376,7 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   swarm:  { src: '/swarm_a.png',           frameW: 887, frameH: 443, drawW: 36, drawH: 18 },
   trojan: { src: '/trojan_a.png',          frameW: 887, frameH: 443, drawW: 90, drawH: 45 },
   shield: { src: '/shield_bearer_a.png',   frameW: 887, frameH: 443, drawW: 58, drawH: 29 },
+  crow:   { src: '/crow_a.png',            frameW: 887, frameH: 443, drawW: 44, drawH: 22 },
 }
 
 function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
@@ -471,6 +472,49 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
       ctx.fillStyle = 'rgba(255,255,255,0.8)'
       ctx.fillText('❄', e.x, e.y)
     }
+    return
+  }
+
+  // ── Aerial crow: draw ground shadow, then sprite elevated above it ────────
+  if (e.aerial) {
+    const sheet = ENEMY_SHEETS['crow']
+    const EW = sheet?.drawW ?? 44, EH = sheet?.drawH ?? 22
+    const ELEVATION = 22  // px above the y position (visual height above ground)
+    const drawX = e.x - EW / 2
+    const drawY = e.y - EH / 2 - ELEVATION
+    // Ground shadow — dark ellipse below
+    ctx.save()
+    ctx.globalAlpha = 0.3
+    ctx.fillStyle = '#000'
+    ctx.beginPath()
+    ctx.ellipse(e.x, e.y, EW * 0.4, EH * 0.4, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    // Sprite (or colored rect fallback)
+    if (sheet) {
+      const img = getCachedImage(sheet.src)
+      if (img) {
+        const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
+        const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
+        ctx.drawImage(img, 0, frame * sheet.frameH, sheet.frameW, sheet.frameH, drawX, drawY, EW, EH)
+      } else {
+        ctx.fillStyle = '#1e1b4b'
+        ctx.beginPath()
+        ;(ctx as any).roundRect(drawX, drawY, EW, EH, 4)
+        ctx.fill()
+      }
+    }
+    // HP bar above sprite
+    ctx.fillStyle = '#0d1b2a'
+    ctx.fillRect(drawX, drawY - 7, EW, 4)
+    const pct = Math.max(0, e.hp / e.maxHp)
+    ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#fbbf24' : '#f87171'
+    ctx.fillRect(drawX, drawY - 7, EW * pct, 4)
+    // Aerial indicator
+    ctx.font = '8px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'
+    ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 3
+    ctx.fillText('🪶', e.x, drawY - 7)
+    ctx.shadowBlur = 0
     return
   }
 
@@ -581,6 +625,28 @@ function drawProjectile(ctx: CanvasRenderingContext2D, p: Projectile) {
       ctx.arc(p.x, p.y, 7, 0, Math.PI * 2)
       ctx.fill()
     }
+  } else if (p.kind === 'ballista') {
+    // Ballista bolt — long dark bolt with feather fletching feel
+    if (dist > 0) {
+      const angle = Math.atan2(dy, dx)
+      ctx.translate(p.x, p.y)
+      ctx.rotate(angle)
+      ctx.shadowColor = 'rgba(92,40,14,0.9)'
+      ctx.shadowBlur  = 6
+      ctx.strokeStyle = '#78350f'
+      ctx.lineWidth   = 3
+      ctx.lineCap     = 'round'
+      ctx.beginPath()
+      ctx.moveTo(-18, 0)
+      ctx.lineTo(8, 0)
+      ctx.stroke()
+      // Tip
+      ctx.fillStyle = '#1c0a00'
+      ctx.beginPath()
+      ctx.moveTo(8, 0); ctx.lineTo(4, -3); ctx.lineTo(4, 3)
+      ctx.closePath()
+      ctx.fill()
+    }
   } else if (p.kind === 'frost') {
     const img = getCachedImage('/frost_orb_p.png')
     if (img) {
@@ -629,6 +695,7 @@ const ENEMY_COLOR: Record<string, string> = {
   swarm:  '#facc15',   // yellow — tiny and fast
   trojan: '#8b5e3c',   // wooden brown
   shield: '#16a34a',   // Celtic green
+  crow:   '#1e1b4b',   // dark indigo — ominous war crow
 }
 
 export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0, craftingState }: Props) {

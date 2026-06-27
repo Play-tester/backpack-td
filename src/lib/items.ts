@@ -68,6 +68,27 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
 
     maxTier: 7,
   },
+  ballista: {
+    kind: 'ballista',
+    category: 'military',
+    size: '2x1',           // 2 cells tall — a tall siege weapon
+    label: 'Ballista',
+    color: '#92400e',
+    image: '/ballista_tower.png',
+    tierImages: [
+      '/ballista_tower_T1.png',
+      '/ballista_tower_T2.png',
+      '/ballista_tower_T3.png',
+      '/ballista_tower_T4.png',
+      '/ballista_tower_T5.png',
+      '/ballista_tower_T6.png',
+      '/ballista_tower_T7.png',
+    ],
+    damage: 45,            // high single-target damage
+    attackSpeed: 0.4,      // slow — winds up between shots
+    range: 5,
+    maxTier: 7,
+  },
   bank: {
     kind: 'bank',
     category: 'economic',
@@ -106,9 +127,10 @@ export function getEconomicMultiplier(tier: number): number {
 // Military damage scaling — per kind:
 // archer: +40% per tier · cannon/frost: +50% per tier
 const DAMAGE_RATE: Partial<Record<string, number>> = {
-  archer: 1.40,
-  cannon: 1.50,
-  frost:  1.50,
+  archer:   1.40,
+  cannon:   1.50,
+  frost:    1.50,
+  ballista: 1.35,  // +35%/tier — meaningful per-shot growth without going extreme
 }
 
 export function getMilitaryDamageMultiplier(tier: number, kind?: string): number {

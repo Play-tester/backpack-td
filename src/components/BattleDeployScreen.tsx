@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { BATTLE_H, BATTLE_W, LANE_CX, LANE_W, isZigzagWave, ZIGZAG_WAYPOINTS, TRIPLE_LANE_XS, isTripleLaneWave, DIAMOND_PATH_A, DIAMOND_PATH_B, isDiamondWave, FUNNEL_PATH_A, FUNNEL_PATH_B, isFunnelWave, LONG_BATTLE_H, EXT_ZIGZAG_WAYPOINTS, isExtZigzagWave, isLongWave, type DeployedTower } from '../battle/types'
-import { KIND_RANGE } from '../battle/engine'
+import { KIND_RANGE, ballistaRange } from '../battle/engine'
 import { getItemImage } from '../lib/items'
 import type { Buffs } from '../lib/levelup'
 import { shapeDims, type Item, type ItemSize, type PlacedItem } from '../types'
@@ -358,7 +358,7 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
           {slots.map(slot => {
             const item = slotItems[slot.id]
             if (!item) return null
-            const baseRange = KIND_RANGE[item.def.kind] ?? 115
+            const baseRange = item.def.kind === 'ballista' ? ballistaRange(item.tier) : (KIND_RANGE[item.def.kind] ?? 115)
             const rangePx = Math.round(baseRange * (buffs?.rangeBonus ?? 1))
             return (
               <circle

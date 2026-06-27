@@ -131,6 +131,7 @@ const ENEMY_STATS: Record<EnemyKind, { hp: number; speed: number; gold: number; 
   swarm:  { hp: 35,  speed: 140, gold: 1, group: 3 },  // tiny, always spawns as a group of 3
   trojan: { hp: 800, speed: 30,  gold: 10 }, // boss — high HP, very slow, releases grunts on death
   shield: { hp: 110, speed: 55,  gold: 2  }, // Celtic shield bearer — absorbs 70% archer damage
+  crow:   { hp: 60,  speed: 90,  gold: 2  }, // War Crow (Badb Catha) — aerial, only ballista can hit
 }
 
 // Enemies released when the Trojan Horse dies
@@ -156,8 +157,10 @@ function getWaveConfig(wave: number): WaveConfig {
   if (wave <= WAVE_TABLE.length) return WAVE_TABLE[wave - 1]
   // waves 6–9: all four base types, +2 per wave
   if (wave <= 10) return { count: 8 + (wave - 5) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm'] }
-  // waves 11+: add shield bearer to the mix, +2 per wave
-  return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield'] }
+  // waves 11–12: shield bearer added
+  if (wave <= 12) return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield'] }
+  // waves 13+: War Crows join — aerial, only ballista can hit them
+  return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield', 'crow'] }
 }
 
 /** Build a shuffled spawn sequence with the correct count of each kind */
@@ -184,15 +187,29 @@ function buildSpawnQueue(config: WaveConfig): EnemyKind[] {
 }
 
 // ── Tower kind stats ───────────────────────────────────────────────────────
-export const KIND_RANGE: Record<string, number> = { archer: 80, cannon: 115, frost: 70 }
+export const KIND_RANGE: Record<string, number> = { archer: 80, cannon: 115, frost: 70, ballista: 140 }
 const KIND_SPLASH: Record<string, number>   = { cannon: 32 }
 const KIND_SLOW_DUR: Record<string, number> = { frost: 2.5 }
+// Ground towers can't target aerial; ballista targets both but deals 50% dmg to ground
+const KIND_GROUND_ONLY  = new Set(['archer', 'cannon', 'frost'])
+
+// ── Ballista per-tier overrides (attack speed and range don't use generic scaling) ──
+// Index = tier - 1.  Values beyond T7 clamp to last entry.
+const BALLISTA_SPEED_BY_TIER = [0.4, 0.4, 0.5, 0.5, 0.6, 0.6, 0.7]  // atk/s
+const BALLISTA_RANGE_BY_TIER = [140, 140, 140, 155, 155, 170, 170]    // px (base, before buffs)
+function ballistaSpeed(tier: number): number {
+  return BALLISTA_SPEED_BY_TIER[Math.min(tier, BALLISTA_SPEED_BY_TIER.length) - 1]
+}
+export function ballistaRange(tier: number): number {
+  return BALLISTA_RANGE_BY_TIER[Math.min(tier, BALLISTA_RANGE_BY_TIER.length) - 1]
+}
 
 // ── Projectile speeds (px/s) per tower kind ───────────────────────────────
 const PROJ_SPEED: Record<string, number> = {
-  archer: 420,
-  cannon: 200,
-  frost:  320,
+  archer:   420,
+  cannon:   200,
+  frost:    320,
+  ballista: 500,  // fast bolt
 }
 
 // ── Factory ────────────────────────────────────────────────────────────────
@@ -228,6 +245,15 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
   }
   if (kind === 'trojan') enemy.spawnsOnDeath = [...TROJAN_RELEASE]
   if (kind === 'shield') enemy.damageResist = { archer: _shieldArcherResist }  // crafting-aware resist
+  if (kind === 'crow') {
+    enemy.aerial = true
+    // Crows fly straight across the canvas at a random x column — ignoring the ground path
+    const crowLaneX = 40 + Math.floor(Math.random() * 6) * 60  // ~6 columns: 40,100,160,220,280,340
+    enemy.laneX  = crowLaneX
+    enemy.x      = crowLaneX
+    enemy.y      = -34
+    enemy.pathDist = 0  // not used for movement — y position drives escape check
+  }
   return enemy
 }
 
@@ -254,8 +280,12 @@ export function initBattle(
       x,
       y,
       damage:       Math.round((item.def.damage ?? 10) * damageMult * buffs.damageBonus),
-      attackSpeed:  (item.def.attackSpeed ?? 1) * buffs.speedBonus,
-      rangePx:      (KIND_RANGE[item.def.kind] ?? 84) * rangeMult * buffs.rangeBonus,
+      attackSpeed:  (item.def.kind === 'ballista'
+                      ? ballistaSpeed(item.tier)
+                      : (item.def.attackSpeed ?? 1)) * buffs.speedBonus,
+      rangePx:      (item.def.kind === 'ballista'
+                      ? ballistaRange(item.tier)
+                      : (KIND_RANGE[item.def.kind] ?? 84) * rangeMult) * buffs.rangeBonus,
       cooldown:     0,
       color:        item.def.color,
       image:        getItemImage(item),
@@ -382,6 +412,12 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
 
   // ── Move enemies ─────────────────────────────────────────────────────────
   for (const e of enemies) {
+    // Aerial crows: fly straight down, ignore path, ignore slow
+    if (e.aerial) {
+      e.y += e.baseSpeed * dt
+      // x stays fixed at laneX
+      continue
+    }
     e.slowTimer = Math.max(0, e.slowTimer - dt)
     const speed = (e.slowTimer > 0 ? e.baseSpeed * 0.4 : e.baseSpeed) * dt
     if (isExtZigzagWave(prev.wave)) {
@@ -474,12 +510,14 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
     tower.flashTimer = Math.max(0, tower.flashTimer - dt)
     if (tower.cooldown > 0) continue
 
-    // Target: enemy furthest along path within range
+    // Target: ground towers skip aerial; ballista can hit both.
+    const groundOnly  = KIND_GROUND_ONLY.has(tower.kind)
+    const validTargets = groundOnly ? enemies.filter(e => !e.aerial) : enemies
     let target: Enemy | null = null
     if (isExtZigzagWave(prev.wave) || isZigzagWave(prev.wave)) {
       // 2D distance; priority = furthest along path
       let bestDist = -Infinity
-      for (const e of enemies) {
+      for (const e of validTargets) {
         const dx = e.x - tower.x, dy = e.y - tower.y
         if (Math.sqrt(dx * dx + dy * dy) <= tower.rangePx && e.pathDist > bestDist) {
           target = e; bestDist = e.pathDist
@@ -488,17 +526,18 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
     } else if (isTripleLaneWave(prev.wave) || isDiamondWave(prev.wave) || isFunnelWave(prev.wave)) {
       // 2D distance; priority = highest y (furthest down)
       let bestY = -Infinity
-      for (const e of enemies) {
+      for (const e of validTargets) {
         const dx = e.x - tower.x, dy = e.y - tower.y
         if (Math.sqrt(dx * dx + dy * dy) <= tower.rangePx && e.y > bestY) {
           target = e; bestY = e.y
         }
       }
     } else {
-      // Single lane: y-only distance check
+      // Single lane or aerial (2D distance, priority = furthest down)
       let bestY = -Infinity
-      for (const e of enemies) {
-        if (Math.abs(e.y - tower.y) <= tower.rangePx && e.y > bestY) {
+      for (const e of validTargets) {
+        const dx = e.x - tower.x, dy = e.y - tower.y
+        if (Math.sqrt(dx * dx + dy * dy) <= tower.rangePx && e.y > bestY) {
           target = e; bestY = e.y
         }
       }
@@ -547,6 +586,7 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
         }
       }
     } else if (
+      e.aerial ? e.y > BATTLE_H + 34 :  // crows escape when they fly off the bottom
       isExtZigzagWave(prev.wave) ? e.pathDist >= EXT_ZIGZAG_TOTAL_LEN :
       isZigzagWave(prev.wave)    ? e.pathDist >= ZIGZAG_TOTAL_LEN     :
       isDiamondWave(prev.wave)   ? e.pathDist >= DIAMOND_TOTAL_LEN    :
@@ -570,7 +610,9 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
       const hit = alive.find(e => e.id === p.targetId)
       if (hit) {
         const resist = hit.damageResist?.[p.kind] ?? 1
-        hit.hp -= Math.round(p.damage * resist)
+        // Ballista deals 50% damage to ground enemies (specialised anti-aerial weapon)
+        const aerialMult = (p.kind === 'ballista' && !hit.aerial) ? 0.5 : 1
+        hit.hp -= Math.round(p.damage * resist * aerialMult)
         if (p.splashRadius > 0) {
           for (const e of alive) {
             if (e.id !== p.targetId && Math.abs(e.y - p.ty) <= p.splashRadius) {

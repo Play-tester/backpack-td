@@ -3,12 +3,13 @@ import { SHAPE_OFFSETS, shapeDims } from '../types'
 import type { Item, ItemKind, ItemSize } from '../types'
 
 export const ITEM_COSTS: Record<ItemKind, number> = {
-  archer: 3,
-  cannon: 6,
-  frost: 4,
-  bank: 5,
-  shop: 4,
-  academy: 20,
+  archer:   3,
+  cannon:   6,
+  frost:    4,
+  ballista: 8,   // premium — the only counter to aerial units
+  bank:     5,
+  shop:     4,
+  academy:  20,
 }
 
 export interface ShopSlot {
@@ -52,8 +53,9 @@ function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: numb
 }
 
 let _shopId = 1
-const ALL_KINDS:      ItemKind[] = ['archer', 'cannon', 'frost', 'bank', 'shop']
-const MILITARY_KINDS: ItemKind[] = ['archer', 'cannon', 'frost']
+const ALL_KINDS:         ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'bank', 'shop']
+const MILITARY_KINDS:    ItemKind[] = ['archer', 'cannon', 'frost', 'ballista']
+const EARLY_MIL_KINDS:   ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista before wave 13
 
 /** Purchase cost for an item of a given kind and tier */
 export function getItemCost(kind: ItemKind, tier: number): number {
@@ -113,7 +115,7 @@ function pickTier(wave: number): number {
 
 export const MAX_SHOP_ITEMS = 6
 
-export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[]): ShopSlot[] {
+export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false): ShopSlot[] {
   const itemCount = Math.min(count, MAX_SHOP_ITEMS)
   function makeItem(kind: ItemKind, tier = 1) {
     return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
@@ -125,15 +127,17 @@ export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[])
   if (tutorialForceItems && tutorialForceItems.length > 0) {
     pending = tutorialForceItems.map(kind => makeItem(kind as ItemKind, 1))
   } else {
+    // Ballista only appears from wave 13+ AND only if researched in Crafting
+    const availableKinds = (wave >= 13 && ballistaUnlocked) ? ALL_KINDS : ALL_KINDS.filter(k => k !== 'ballista')
     pending = Array.from({ length: itemCount }, () => {
-      const kind = ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)]
+      const kind = availableKinds[Math.floor(Math.random() * availableKinds.length)]
       return makeItem(kind, pickTier(wave))
     })
 
-    // First 5 waves: guarantee at least one military tower (always tier 1)
-    if (wave <= 5 && !pending.some(s => (MILITARY_KINDS as string[]).includes(s.item.def.kind))) {
+    // First 5 waves: guarantee at least one military tower (always tier 1, no ballista)
+    if (wave <= 5 && !pending.some(s => (EARLY_MIL_KINDS as string[]).includes(s.item.def.kind))) {
       const replaceIdx   = Math.floor(Math.random() * pending.length)
-      const militaryKind = MILITARY_KINDS[Math.floor(Math.random() * MILITARY_KINDS.length)]
+      const militaryKind = EARLY_MIL_KINDS[Math.floor(Math.random() * EARLY_MIL_KINDS.length)]
       pending[replaceIdx] = makeItem(militaryKind, 1)
     }
 

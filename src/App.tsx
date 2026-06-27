@@ -33,7 +33,7 @@ import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
 import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
-import { CRAFTING_UPGRADES, getInitialCraftingState, type CraftingState } from './lib/crafting'
+import { CRAFTING_UPGRADES, getInitialCraftingState, isBallistaUnlocked, type CraftingState } from './lib/crafting'
 import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
 import CraftingScreen from './components/CraftingScreen'
 
@@ -522,7 +522,7 @@ export default function App() {
     const nextWave = won ? wave + 1 : wave
     const nextTutorialConfig = getStepConfig(nextTutorialStep)
     const shopForceItems = (!won && wave === 2) ? ['frost', 'frost', 'frost', 'frost'] : nextTutorialConfig?.forceShopItems
-    const newSlots = generateShop(shopSize, nextWave, shopForceItems)
+    const newSlots = generateShop(shopSize, nextWave, shopForceItems, isBallistaUnlocked(craftingState))
     setShopSlots(newSlots)
     setRerollCost(1)
     if (won) setWave(nextWave)
@@ -575,7 +575,12 @@ export default function App() {
     if (gold < costGold || wood < woodCost) return
     setGold(g => g - costGold)
     setWood(w => w - woodCost)
-    setCraftingState(prev => ({ ...prev, [upgradeId]: level + 1 }))
+    const newCraftingState = { ...craftingState, [upgradeId]: level + 1 }
+    setCraftingState(newCraftingState)
+    // If ballista was just researched and wave >= 13, refresh shop so it can appear
+    if (upgradeId === 'ballista_research' && wave >= 13) {
+      setShopSlots(generateShop(shopSize, wave, undefined, true))
+    }
   }
 
   // ── Re-roll shop ──────────────────────────────────────────────────────────
@@ -585,7 +590,7 @@ export default function App() {
     if (gold < rerollCost) return
     setGold(g => g - rerollCost)
     setRerollCost(c => Math.ceil(c * 1.5))
-    const rerolledSlots = generateShop(shopSize, wave, tutorialConfig?.forceShopItems)
+    const rerolledSlots = generateShop(shopSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState))
     setShopSlots(rerolledSlots)
     if (!hasSeenFrost.current && rerolledSlots.some(s => s.item.def.kind === 'frost')) {
       hasSeenFrost.current = true
@@ -634,7 +639,7 @@ export default function App() {
     if (perk.kind === 'expand_shop') {
       const newSize = shopSize + 1
       setShopSize(newSize)
-      const expandedSlots = generateShop(newSize, wave, tutorialConfig?.forceShopItems)
+      const expandedSlots = generateShop(newSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState))
       setShopSlots(expandedSlots)
       if (!hasSeenFrost.current && expandedSlots.some(s => s.item.def.kind === 'frost')) {
         hasSeenFrost.current = true
