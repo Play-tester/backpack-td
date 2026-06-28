@@ -385,6 +385,7 @@ interface EnemySheet {
   frameH: number   // height of one frame in the source image
   drawW:  number   // rendered width on canvas  (px)
   drawH:  number   // rendered height on canvas (px)
+  horizontal?: boolean  // frames laid out left-to-right instead of top-to-bottom
 }
 
 const ENEMY_SHEETS: Record<string, EnemySheet> = {
@@ -396,7 +397,7 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   trojan: { src: '/trojan_a.png',          frameW: 887, frameH: 443, drawW: 90, drawH: 45 },
   shield: { src: '/shield_bearer_a.png',   frameW: 887, frameH: 443, drawW: 58, drawH: 29 },
   crow:   { src: '/crow_a.png',            frameW: 887, frameH: 443, drawW: 44, drawH: 22 },
-  druid:  { src: '/druid_a.png',           frameW: 887, frameH: 443, drawW: 52, drawH: 26 },
+  druid:  { src: '/druid_a.png',           frameW: 443, frameH: 887, drawW: 40, drawH: 80, horizontal: true },
 }
 
 function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
@@ -509,7 +510,9 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
       if (img) {
         const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
         const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
-        ctx.drawImage(img, 0, frame * sheet.frameH, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
+        const sx = sheet.horizontal ? frame * sheet.frameW : 0
+        const sy = sheet.horizontal ? 0 : frame * sheet.frameH
+        ctx.drawImage(img, sx, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
       } else {
         ctx.fillStyle = '#a78bfa'
         ctx.beginPath(); (ctx as any).roundRect(x0, y0, EW, EH, 4); ctx.fill()
@@ -585,8 +588,9 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
       // Phase offset per enemy so groups don't animate in lockstep
       const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
       const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
-      const sy    = frame * sheet.frameH
-      ctx.drawImage(img, 0, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
+      const sx = sheet.horizontal ? frame * sheet.frameW : 0
+      const sy = sheet.horizontal ? 0 : frame * sheet.frameH
+      ctx.drawImage(img, sx, sy, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
     } else {
       ctx.fillStyle = baseColor
       ctx.beginPath()
