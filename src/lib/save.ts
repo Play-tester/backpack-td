@@ -42,6 +42,7 @@ export interface SaveData {
   hasSeenShard:    boolean
   hasSeenFrost:    boolean
   wood:            number
+  runes:           number
   craftingState:   CraftingState
   craftingUnlocked: boolean
   hasSeenShieldIntro: boolean
@@ -102,6 +103,7 @@ export function getDefaultSave(startingGold: number, reservesSize: number): Save
     hasSeenShard:    false,
     hasSeenFrost:    false,
     wood:            0,
+    runes:           0,
     craftingState:   getInitialCraftingState(),
     craftingUnlocked: false,
     hasSeenShieldIntro: false,

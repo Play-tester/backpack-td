@@ -38,6 +38,7 @@ import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
 import WarCrowIntroScreen from './components/WarCrowIntroScreen'
 import FallenDruidIntroScreen from './components/FallenDruidIntroScreen'
 import CraftingScreen from './components/CraftingScreen'
+import GameShop from './components/GameShop'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle' | 'world1-complete' | 'world-map' | 'world2-narrative'
@@ -161,6 +162,8 @@ export default function App() {
 
   // ── Crafting state ─────────────────────────────────────────────────────────
   const [wood, setWood]                             = useState(savedGame?.wood ?? 0)
+  const [runes, setRunes]                           = useState(savedGame?.runes ?? 0)
+  const [showGameShop, setShowGameShop]             = useState(false)
   const [craftingState, setCraftingState]           = useState<CraftingState>(savedGame?.craftingState ?? getInitialCraftingState())
   const [craftingUnlocked, setCraftingUnlocked]     = useState(savedGame?.craftingUnlocked ?? false)
   const [showShieldIntro, setShowShieldIntro]       = useState(false)
@@ -196,6 +199,7 @@ export default function App() {
       hasSeenShard: hasSeenShard.current,
       hasSeenFrost: hasSeenFrost.current,
       wood,
+      runes,
       craftingState,
       craftingUnlocked,
       hasSeenShieldIntro: hasSeenShieldIntro.current,
@@ -976,6 +980,8 @@ export default function App() {
             setTutorial({ active: false, currentStep: 'complete' })
           }
         }}
+        runes={runes}
+        onOpenShop={() => setShowGameShop(true)}
         onStartBattle={() => {
           setRoundResult(null)
           setHasDeployedInPrep(false)
@@ -988,6 +994,17 @@ export default function App() {
         onCheatGold={() => setGold(g => g + 100)}
         onCheatWave={w => setWave(w)}
       />
+      {showGameShop && (
+        <GameShop
+          gold={gold} wood={wood} runes={runes}
+          onClose={() => setShowGameShop(false)}
+          onEarn={reward => {
+            if (reward.gold)  setGold(g  => g  + (reward.gold  ?? 0))
+            if (reward.wood)  setWood(w  => w  + (reward.wood  ?? 0))
+            if (reward.runes) setRunes(r => r  + (reward.runes ?? 0))
+          }}
+        />
+      )}
     </DragProvider>
   )
 }
@@ -1009,6 +1026,7 @@ function TradeUI({
   showHeroesTabHint, onDismissHeroesTabHint,
   musicVolume, onMusicVolumeChange,
   onInfoIconTap,
+  runes: _runes, onOpenShop,
   onStartBattle, onPickUpgrade, onPickBasePerk, onReroll, onSellItem,
   onCheatGold, onCheatWave,
 }: {
@@ -1028,6 +1046,8 @@ function TradeUI({
   showHeroesTabHint: boolean; onDismissHeroesTabHint: () => void
   musicVolume: number; onMusicVolumeChange: (v: number) => void
   onInfoIconTap?: () => void
+  runes: number
+  onOpenShop: () => void
   onStartBattle: () => void
   onPickUpgrade: (u: Upgrade) => void
   onPickBasePerk: (p: BasePerk) => void
@@ -1140,16 +1160,21 @@ function TradeUI({
             highlightSell={showSellHint}
           />
         </div>
-        <button
-          className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
-          onClick={onStartBattle}
-        >
-          {roundResult?.won === false
-            ? `↺ Retry Wave ${wave}`
-            : tutorialConfig?.highlightBattleBtn
-            ? `👉 Start Wave ${wave}`
-            : `⚔ Start Wave ${wave}`}
-        </button>
+        <div className="battle-btn-row">
+          <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
+            🏪
+          </button>
+          <button
+            className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
+            onClick={onStartBattle}
+          >
+            {roundResult?.won === false
+              ? `↺ Retry Wave ${wave}`
+              : tutorialConfig?.highlightBattleBtn
+              ? `👉 Start Wave ${wave}`
+              : `⚔ Start Wave ${wave}`}
+          </button>
+        </div>
       </section>
 
       <section className={`zone reserves-zone${tutorialConfig?.highlightShop ? ' tutorial-highlight' : ''}`}>
