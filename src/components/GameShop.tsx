@@ -24,8 +24,65 @@ function fmtCooldown(ms: number): string {
   return `${s}s`
 }
 
-function simulateRewardedAd(): Promise<boolean> {
-  return new Promise(resolve => setTimeout(() => resolve(true), 800))
+const AD_VIDEO_ID = 'j964S-ku_P0'
+const AD_DURATION_S = 57  // length of the Short in seconds
+
+// Resolves true when the user has watched enough, false if they closed early
+function showRewardedAd(): Promise<boolean> {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div')
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(0,0,0,0.92);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:12px;
+    `
+
+    const iframe = document.createElement('iframe')
+    iframe.src = `https://www.youtube.com/embed/${AD_VIDEO_ID}?autoplay=1&controls=0&rel=0&modestbranding=1&enablejsapi=1`
+    iframe.allow = 'autoplay; fullscreen'
+    iframe.style.cssText = 'width:360px;height:640px;border:none;border-radius:12px;'
+
+    const bar = document.createElement('div')
+    bar.style.cssText = 'color:#f5e6c0;font-family:sans-serif;font-size:14px;'
+    bar.textContent = `Watch to earn reward…`
+
+    const skipBtn = document.createElement('button')
+    skipBtn.textContent = 'Skip (no reward)'
+    skipBtn.style.cssText = `
+      margin-top:4px;padding:8px 20px;
+      background:transparent;border:2px solid #888;color:#aaa;
+      border-radius:8px;font-size:13px;cursor:pointer;
+    `
+
+    overlay.append(iframe, bar, skipBtn)
+    document.body.appendChild(overlay)
+
+    let elapsed = 0
+    let rewarded = false
+    const tick = setInterval(() => {
+      elapsed++
+      const remaining = Math.max(0, AD_DURATION_S - elapsed)
+      if (elapsed >= AD_DURATION_S) {
+        rewarded = true
+        bar.textContent = '✅ Reward earned!'
+        skipBtn.textContent = 'Close'
+        skipBtn.style.color = '#f5e6c0'
+        skipBtn.style.borderColor = '#f5e6c0'
+        clearInterval(tick)
+        // Auto-close after 1s
+        setTimeout(() => { document.body.removeChild(overlay); resolve(true) }, 1000)
+      } else {
+        bar.textContent = `Watch to earn reward… ${remaining}s`
+      }
+    }, 1000)
+
+    skipBtn.onclick = () => {
+      clearInterval(tick)
+      document.body.removeChild(overlay)
+      resolve(rewarded)
+    }
+  })
 }
 
 export default function GameShop({ gold, wood, runes, onClose, onEarn }: Props) {
@@ -43,8 +100,8 @@ export default function GameShop({ gold, wood, runes, onClose, onEarn }: Props) 
     if (loading) return
     if (adUsesRemaining(item) <= 0) return
     setLoading(item.id)
-    const rewarded = await simulateRewardedAd()
     setLoading(null)
+    const rewarded = await showRewardedAd()
     if (!rewarded) return
     recordAdView(item)
     if (item.reward.chestTier) {
