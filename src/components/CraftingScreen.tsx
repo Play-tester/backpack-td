@@ -42,7 +42,6 @@ export default function CraftingScreen({
           const woodCost = costMats.wood ?? 0
 
           const canAfford = gold >= costGold && wood >= woodCost
-          const isLocked = !canAfford && level === 0
 
           const unresearched = level === 0
 
