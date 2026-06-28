@@ -2,6 +2,7 @@
 
 /* ── Portrait game container ── */
 .game-container {
+  position: relative;
   width: 390px;
   height: 844px;
   background: #f5e6c0;
@@ -633,27 +634,29 @@
 .btn-continue:hover  { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
 .btn-continue:active { transform: translateY(1px); box-shadow: 1px 1px 0 #3a1a05; }
 
-/* ── Battle button row (shop left-edge + start wave centered) ── */
+/* ── Battle button row ── */
 .battle-btn-row {
-  position: relative;
   display: flex; align-items: center; justify-content: center;
   margin-top: 4px;
 }
 
 .btn-shop-open {
-  position: absolute; left: 0;
-  width: 42px; height: 42px;
-  background: transparent; color: #fff;
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px; height: 44px;
+  background: transparent;
   border: none;
   border-radius: 10px;
-  font-size: 20px; line-height: 1;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.1s, filter 0.1s;
+  z-index: 10;
   display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s, filter 0.1s;
 }
-.btn-shop-open:hover  { transform: translateY(-2px); filter: brightness(1.1); }
-.btn-shop-open:active { transform: translateY(1px);  filter: brightness(0.9); }
+.btn-shop-open:hover  { transform: translateY(calc(-50% - 2px)); filter: brightness(1.1); }
+.btn-shop-open:active { transform: translateY(calc(-50% + 1px)); filter: brightness(0.9); }
 
 /* ── Start battle button ── */
 .btn-battle {

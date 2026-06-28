@@ -1159,6 +1159,12 @@ function TradeUI({
         </div>
       )}
 
+      {wave >= 5 && (
+        <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
+          <img src="/Heroes/shop_icon.png" alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+        </button>
+      )}
+
       <section className={`zone backpack-zone${tutorialConfig?.highlightBackpack ? ' tutorial-highlight' : ''}`}>
         <div className="zone-header-row">
           <div className="zone-label">Backpack</div>
@@ -1179,11 +1185,6 @@ function TradeUI({
           />
         </div>
         <div className="battle-btn-row">
-          {wave >= 5 && (
-          <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
-            <img src="/Heroes/shop_icon.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
-          </button>
-          )}
           <button
             className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
             onClick={onStartBattle}
