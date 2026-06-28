@@ -8,9 +8,9 @@ import { getInitialTutorialState, type TutorialState } from './tutorial'
 import { getInitialCraftingState, type CraftingState } from './crafting'
 import { createGrid } from './grid'
 import { GRID_COLS, GRID_ROWS } from '../types/index'
-import { generateShop } from './shop'
+import { generateReserves } from './reserves'
 import type { GridState, PlacedItem } from '../types/index'
-import type { ShopSlot } from './shop'
+import type { ReservesSlot } from './reserves'
 import type { SpellKind } from './spells'
 import type { BasePerk } from './levelup'
 
@@ -32,8 +32,8 @@ export interface SaveData {
   grid:          GridState
   placedItems:   [string, PlacedItem][]   // Map → array for JSON
   tutorial:      TutorialState
-  shopSlots:     ShopSlot[]
-  shopSize:      number
+  reservesSlots: ReservesSlot[]
+  reservesSize:  number
   rerollCost:    number
   pickedBasePerks: BasePerk[]
   unlockedSpells:  SpellKind[]
@@ -76,7 +76,7 @@ export function clearSave(): void {
 }
 
 // ── Default fresh-run state ────────────────────────────────────────────────
-export function getDefaultSave(startingGold: number, shopSize: number): SaveData {
+export function getDefaultSave(startingGold: number, reservesSize: number): SaveData {
   return {
     wave:          1,
     gold:          startingGold,
@@ -92,8 +92,8 @@ export function getDefaultSave(startingGold: number, shopSize: number): SaveData
     grid:          createGrid(),
     placedItems:   [],
     tutorial:      getInitialTutorialState(),
-    shopSlots:     generateShop(shopSize, 1),
-    shopSize,
+    reservesSlots: generateReserves(reservesSize, 1),
+    reservesSize,
     rerollCost:    1,
     pickedBasePerks: [],
     unlockedSpells:  [],

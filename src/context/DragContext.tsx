@@ -2,9 +2,9 @@ import React, { createContext, useContext, useRef, useState } from 'react'
 import type { Item } from '../types'
 
 export interface ActiveDrag {
-  source: 'backpack' | 'shop'
+  source: 'backpack' | 'reserves'
   item: Item
-  sourceId: string        // itemId (backpack) or shopSlotId (shop)
+  sourceId: string        // itemId (backpack) or reservesSlotId (reserves)
   grabOffsetX: number     // px offset within item where user grabbed
   grabOffsetY: number
   mouseX: number          // current viewport coordinates

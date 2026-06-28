@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useDrag } from '../context/DragContext'
 import { canPlace, checkMerge, getItemCells, removeItem } from '../lib/grid'
 import { getItemImage } from '../lib/items'
-import { getSellPrice } from '../lib/shop'
+import { getSellPrice } from '../lib/reserves'
 import {
   GRID_COLS, SHAPE_OFFSETS, shapeDims,
   type GridState, type Item, type ItemSize, type PlacedItem,

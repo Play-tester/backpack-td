@@ -1,7 +1,7 @@
-.shop-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.reserves-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
 /* ── Grid ── */
-.shop-grid {
+.reserves-grid {
   background: #e8d4a0;
   border: 3px solid #3a1a05;
   border-radius: 10px;
@@ -11,34 +11,34 @@
   box-sizing: content-box;
 }
 
-.shop-grid-cell {
+.reserves-grid-cell {
   background: #f5e6c0;
   border-radius: 6px;
   border: 1.5px solid #c8b070;
 }
-.shop-grid-cell.occupied {
+.reserves-grid-cell.occupied {
   background: #ead8a8;
 }
-.shop-grid-cell.sold-cell {
+.reserves-grid-cell.sold-cell {
   background: #dfd0a0;
 }
 
 /* ── Item overlay ── */
-.shop-item-overlay {
+.reserves-item-overlay {
   cursor: grab;
   z-index: 2;
   user-select: none;
   transition: filter 0.1s, opacity 0.1s;
 }
-.shop-item-overlay:hover:not(.sold):not(.cant-afford) {
+.reserves-item-overlay:hover:not(.sold):not(.cant-afford) {
   filter: brightness(1.1) drop-shadow(0 4px 6px rgba(0,0,0,0.35));
 }
-.shop-item-overlay.sold      { opacity: 0.5; cursor: default; pointer-events: none; }
-.shop-item-overlay.cant-afford { cursor: not-allowed; }
-.shop-item-overlay.is-dragging { opacity: 0.25; }
+.reserves-item-overlay.sold      { opacity: 0.5; cursor: default; pointer-events: none; }
+.reserves-item-overlay.cant-afford { cursor: not-allowed; }
+.reserves-item-overlay.is-dragging { opacity: 0.25; }
 
 /* ── Badges ── */
-.shop-cost-badge {
+.reserves-cost-badge {
   position: absolute;
   bottom: 3px; left: 50%; transform: translateX(-50%);
   font-size: 12px; font-weight: 900;
@@ -53,9 +53,9 @@
   white-space: nowrap;
   z-index: 4;
 }
-.shop-cost-badge.too-expensive { background: #e03030; }
+.reserves-cost-badge.too-expensive { background: #e03030; }
 
-.shop-tier-badge {
+.reserves-tier-badge {
   position: absolute;
   top: 3px; left: 3px;
   font-size: 10px; font-weight: 900;
@@ -66,7 +66,7 @@
   pointer-events: none; z-index: 4;
 }
 
-.shop-sold-label {
+.reserves-sold-label {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 900;

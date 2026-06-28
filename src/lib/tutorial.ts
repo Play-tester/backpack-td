@@ -85,7 +85,7 @@ export const TUTORIAL_STEPS: Record<TutorialStep, TutorialStepConfig> = {
   introduce_shop: {
     step: 'introduce_shop',
     wave: 4,
-    instruction: '👉 Shops give gold each round, but take space',
+    instruction: '👉 Markets give gold each round, but take space',
     highlightShop: true,
     highlightBackpack: true,
     highlightBattleBtn: false,
@@ -93,7 +93,7 @@ export const TUTORIAL_STEPS: Record<TutorialStep, TutorialStepConfig> = {
     allowReroll: false,
     allowMerge: true,
     allowEconomy: true,
-    forceShopItems: ['shop', 'archer'],
+    forceShopItems: ['market', 'archer'],
   },
   introduce_info_icon: {
     step: 'introduce_info_icon',

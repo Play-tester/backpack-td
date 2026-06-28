@@ -119,11 +119,11 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
     image: '/bank.png',
     goldPerRound: 4,
   },
-  shop: {
-    kind: 'shop',
+  market: {
+    kind: 'market',
     category: 'economic',
     size: '1x1',           // 1 cell — small and cheap
-    label: 'Shop',
+    label: 'Market',
     color: '#a78bfa',
     image: '/shop.png',
     goldPerRound: 1,
@@ -181,7 +181,7 @@ export function getScaledRange(item: Item): number {
 const BANK_GOLD = [5, 10, 20, 30, 50, 100]  // tier 1–6, capped at 100g
 
 export function getScaledGold(item: Item): number {
-  if (item.def.kind === 'shop') {
+  if (item.def.kind === 'market') {
     // Doubles each tier, capped at tier 7 (64g)
     return Math.pow(2, Math.min(item.tier, 7) - 1)
   }

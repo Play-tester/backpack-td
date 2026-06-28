@@ -9,7 +9,7 @@ import BattleCanvas from './components/BattleCanvas'
 import BattleDeployScreen from './components/BattleDeployScreen'
 import LevelUpModal from './components/LevelUpModal'
 import Tooltip from './components/Tooltip'
-import Shop from './components/Shop'
+import Reserves from './components/Reserves'
 import { type ActiveDrag, DragProvider, useDrag } from './context/DragContext'
 import { canPlace, checkMerge, createGrid, getItemCells, moveItem, placeItem, removeItem } from './lib/grid'
 import { getItemImage, getScaledGold, mergeItems } from './lib/items'
@@ -19,7 +19,7 @@ import {
   DEFAULT_BUFFS,
   type BuffGrant, type Buffs, type Upgrade, type BasePerk,
 } from './lib/levelup'
-import { generateShop, getSellPrice, type ShopSlot } from './lib/shop'
+import { generateReserves, getSellPrice, type ReservesSlot } from './lib/reserves'
 import { GRID_COLS, GRID_ROWS, MAX_GRID_COLS, MAX_GRID_ROWS, SHAPE_OFFSETS, type GridState, type Item, type ItemSize, type PlacedItem } from './types'
 import { getInitialTutorialState, getStepConfig, type TutorialState } from './lib/tutorial'
 import TutorialOverlay from './components/TutorialOverlay'
@@ -131,10 +131,10 @@ export default function App() {
   )
   const [tutorial, setTutorial]       = useState<TutorialState>(savedGame?.tutorial ?? getInitialTutorialState())
   const tutorialConfig = getStepConfig(tutorial.currentStep)
-  const [shopSlots, setShopSlots]     = useState(() =>
-    savedGame?.shopSlots ?? generateShop(3, 1, tutorialConfig?.forceShopItems)
+  const [reservesSlots, setReservesSlots]     = useState(() =>
+    savedGame?.reservesSlots ?? generateReserves(3, 1, tutorialConfig?.forceShopItems)
   )
-  const [shopSize, setShopSize]       = useState(savedGame?.shopSize      ?? 3)
+  const [reservesSize, setReservesSize]       = useState(savedGame?.reservesSize      ?? 3)
   const [rerollCost, setRerollCost]   = useState(savedGame?.rerollCost    ?? 1)
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null)
   const [showResultPopup, setShowResultPopup] = useState(false)
@@ -189,7 +189,7 @@ export default function App() {
       grid,
       placedItems: placedItemsToArray(placedItems),
       tutorial,
-      shopSlots, shopSize, rerollCost,
+      reservesSlots, reservesSize, rerollCost,
       pickedBasePerks, unlockedSpells,
       heroProgress,
       musicVolume,
@@ -209,7 +209,7 @@ export default function App() {
       unlockedCells, gridCols, gridRows,
       grid, placedItems,
       tutorial,
-      shopSlots, shopSize, rerollCost,
+      reservesSlots, reservesSize, rerollCost,
       pickedBasePerks, unlockedSpells,
       heroProgress,
       musicVolume,
@@ -316,10 +316,10 @@ export default function App() {
           p.delete(mergeId); if (excludeId) p.delete(excludeId)
           p.set(merged.id, { item: merged, row: target.row, col: target.col })
           setGrid(g); setPlacedItems(p)
-          if (drag.source === 'shop') {
-            const slot = shopSlots.find(s => s.id === drag.sourceId)
+          if (drag.source === 'reserves') {
+            const slot = reservesSlots.find(s => s.id === drag.sourceId)
             if (slot && !slot.sold && gold >= slot.cost) {
-              setShopSlots(prev => prev.map(s => s.id === slot.id ? { ...s, sold: true } : s))
+              setReservesSlots(prev => prev.map(s => s.id === slot.id ? { ...s, sold: true } : s))
               setGold(v => v - slot.cost)
             }
           }
@@ -375,7 +375,7 @@ export default function App() {
         }
       }
     } else {
-      const slot = shopSlots.find(s => s.id === drag.sourceId)
+      const slot = reservesSlots.find(s => s.id === drag.sourceId)
       if (!slot || slot.sold || gold < slot.cost) return
       if (!canPlace(grid, drag.item, snapRow, snapCol, undefined, unlockedCells)) return
       try {
@@ -383,20 +383,20 @@ export default function App() {
         const p = new Map(placedItems)
         p.set(drag.item.id, { item: drag.item, row: snapRow, col: snapCol })
         setGrid(g); setPlacedItems(p)
-        setShopSlots(prev => prev.map(s => s.id === slot.id ? { ...s, sold: true } : s))
+        setReservesSlots(prev => prev.map(s => s.id === slot.id ? { ...s, sold: true } : s))
         setGold(v => v - slot.cost)
 
         // Tutorial: advance when player places item from shop
         if (tutorial.active && tutorial.currentStep === 'place_and_buy') {
           setTutorial({ active: true, currentStep: 'deploy_and_watch' })
         }
-        // Tutorial: advance to info-icon step when player places shop item during introduce_shop
-        if (tutorial.active && tutorial.currentStep === 'introduce_shop' && drag.item.def.kind === 'shop') {
+        // Tutorial: advance to info-icon step when player places market item during introduce_shop
+        if (tutorial.active && tutorial.currentStep === 'introduce_shop' && drag.item.def.kind === 'market') {
           setTutorial({ active: true, currentStep: 'introduce_info_icon' })
         }
       } catch { /* invalid */ }
     }
-  }, [grid, placedItems, shopSlots, gold, tutorial])
+  }, [grid, placedItems, reservesSlots, gold, tutorial])
 
   // ── Battle end ─────────────────────────────────────────────────────────────
   function handleBattleEnd(result: BattleResult) {
@@ -457,8 +457,8 @@ export default function App() {
     if (newBaseLevel > baseLevel) {
       setBaseLevel(newBaseLevel)
       const isGridMaxed = gridCols >= MAX_GRID_COLS && gridRows >= MAX_GRID_ROWS
-      const isShopMaxed = shopSize >= 6
-      setPendingBaseLevel({ toLevel: newBaseLevel, choices: pickThreeBasePerks(newBaseLevel, isGridMaxed, isShopMaxed) })
+      const isReservesMaxed = reservesSize >= 6
+      setPendingBaseLevel({ toLevel: newBaseLevel, choices: pickThreeBasePerks(newBaseLevel, isGridMaxed, isReservesMaxed) })
     }
 
     // 4. Tick down temporary buff grants (regardless of win/loss)
@@ -542,8 +542,8 @@ export default function App() {
     const nextWave = won ? wave + 1 : wave
     const nextTutorialConfig = getStepConfig(nextTutorialStep)
     const shopForceItems = (!won && wave === 2) ? ['frost', 'frost', 'frost', 'frost'] : nextTutorialConfig?.forceShopItems
-    const newSlots = generateShop(shopSize, nextWave, shopForceItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
-    setShopSlots(newSlots)
+    const newSlots = generateReserves(reservesSize, nextWave, shopForceItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
+    setReservesSlots(newSlots)
     setRerollCost(1)
     if (won) setWave(nextWave)
     if (won && wave === 5) setShowSellHint(true)
@@ -625,7 +625,7 @@ export default function App() {
     const justUnlockedBallista = upgradeId === 'ballista_research' && wave >= 13
     const justUnlockedLantern  = upgradeId === 'lantern_research'  && wave >= 17
     if (justUnlockedBallista || justUnlockedLantern) {
-      setShopSlots(generateShop(shopSize, wave, undefined,
+      setReservesSlots(generateReserves(reservesSize, wave, undefined,
         isBallistaUnlocked(newCraftingState),
         isLanternUnlocked(newCraftingState),
       ))
@@ -639,8 +639,8 @@ export default function App() {
     if (gold < rerollCost) return
     setGold(g => g - rerollCost)
     setRerollCost(c => Math.ceil(c * 1.5))
-    const rerolledSlots = generateShop(shopSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
-    setShopSlots(rerolledSlots)
+    const rerolledSlots = generateReserves(reservesSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
+    setReservesSlots(rerolledSlots)
     if (!hasSeenFrost.current && rerolledSlots.some(s => s.item.def.kind === 'frost')) {
       hasSeenFrost.current = true
       setShowFrostHint(true)
@@ -686,10 +686,10 @@ export default function App() {
     setPickedBasePerks(prev => [...prev, perk])
 
     if (perk.kind === 'expand_shop') {
-      const newSize = shopSize + 1
-      setShopSize(newSize)
-      const expandedSlots = generateShop(newSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
-      setShopSlots(expandedSlots)
+      const newSize = reservesSize + 1
+      setReservesSize(newSize)
+      const expandedSlots = generateReserves(newSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
+      setReservesSlots(expandedSlots)
       if (!hasSeenFrost.current && expandedSlots.some(s => s.item.def.kind === 'frost')) {
         hasSeenFrost.current = true
         setShowFrostHint(true)
@@ -959,7 +959,7 @@ export default function App() {
       <TradeUI
         gold={gold} mana={mana} manaNeeded={manaNeeded} level={level} wave={wave}
         xp={xp} xpNeeded={xpNeeded} baseLevel={baseLevel}
-        grid={grid} placedItems={placedItems} shopSlots={shopSlots}
+        grid={grid} placedItems={placedItems} reservesSlots={reservesSlots}
         gridRef={gridRef} roundResult={roundResult} buffGrants={buffGrants}
         pendingLvlUp={pendingLvlUp} pendingBaseLevel={pendingBaseLevel} rerollCost={rerollCost}
         cellSize={cellSize} onCellSizeChange={setCellSize}
@@ -999,7 +999,7 @@ interface TooltipState { item: Item; x: number; y: number }
 function TradeUI({
   gold, mana, manaNeeded, level: _level, wave,
   xp, xpNeeded, baseLevel,
-  grid, placedItems, shopSlots,
+  grid, placedItems, reservesSlots,
   gridRef, roundResult, buffGrants, pendingLvlUp, pendingBaseLevel, rerollCost,
   cellSize, onCellSizeChange, gridCols, gridRows, unlockedCells, tutorialConfig,
   activeTab, onTabChange, hasAcademy, hasBasePerks, hasHeroes, hasCrafting, heroProgress: _heroProgress,
@@ -1015,7 +1015,7 @@ function TradeUI({
   gold: number; mana: number; manaNeeded: number; level: number; wave: number
   xp: number; xpNeeded: number; baseLevel: number
   grid: GridState; placedItems: Map<string, PlacedItem>
-  shopSlots: ShopSlot[]; gridRef: React.RefObject<HTMLDivElement | null>
+  reservesSlots: ReservesSlot[]; gridRef: React.RefObject<HTMLDivElement | null>
   roundResult: RoundResult | null; buffGrants: BuffGrant[]
   pendingLvlUp: PendingLevelUp | null; pendingBaseLevel: PendingBaseLevel | null; rerollCost: number
   cellSize: number; onCellSizeChange: (cs: number) => void
@@ -1152,10 +1152,10 @@ function TradeUI({
         </button>
       </section>
 
-      <section className={`zone shop-zone${tutorialConfig?.highlightShop ? ' tutorial-highlight' : ''}`}>
-        <div className="zone-label">Shop</div>
-        <Shop
-          slots={shopSlots} gold={gold} rerollCost={rerollCost}
+      <section className={`zone reserves-zone${tutorialConfig?.highlightShop ? ' tutorial-highlight' : ''}`}>
+        <div className="zone-label">Reserves</div>
+        <Reserves
+          slots={reservesSlots} gold={gold} rerollCost={rerollCost}
           onReroll={onReroll} onSlotClick={showTooltip} cellSize={cellSize}
           disableReroll={tutorialConfig ? !tutorialConfig.allowReroll : false}
         />

@@ -9,24 +9,24 @@ export const ITEM_COSTS: Record<ItemKind, number> = {
   ballista: 8,   // premium — anti-aerial specialist
   lantern:  5,   // utility — reveals/pins phasing druids
   bank:     5,
-  shop:     4,
+  market:   4,
   academy:  20,
 }
 
-export interface ShopSlot {
+export interface ReservesSlot {
   id: string
   item: Item
   cost: number
   sold: boolean
-  // position on the 4×6 shop grid (col, row) of the item's anchor cell
+  // position on the 4×6 reserves grid (col, row) of the item's anchor cell
   gridCol: number
   gridRow: number
 }
 
-export const SHOP_COLS = 6
-export const SHOP_ROWS = 4
+export const RESERVES_COLS = 6
+export const RESERVES_ROWS = 4
 
-/** Try to place items on the shop grid without overlap. Returns positions or null if failed. */
+/** Try to place items on the reserves grid without overlap. Returns positions or null if failed. */
 function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: number }[] | null {
   const occupied = new Set<string>()
 
@@ -37,8 +37,8 @@ function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: numb
     const { rows: h, cols: w } = shapeDims(item.size)
     // Collect all valid anchor positions
     const candidates: { col: number; row: number }[] = []
-    for (let r = 0; r <= SHOP_ROWS - h; r++) {
-      for (let c = 0; c <= SHOP_COLS - w; c++) {
+    for (let r = 0; r <= RESERVES_ROWS - h; r++) {
+      for (let c = 0; c <= RESERVES_COLS - w; c++) {
         // Check if all cells of this item would be free
         const fits = offsets.every(([dr, dc]) => !occupied.has(`${r + dr}-${c + dc}`))
         if (fits) candidates.push({ col: c, row: r })
@@ -53,8 +53,8 @@ function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: numb
   return positions
 }
 
-let _shopId = 1
-const ALL_KINDS:       ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'lantern', 'bank', 'shop']
+let _reservesId = 1
+const ALL_KINDS:       ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'lantern', 'bank', 'market']
 const EARLY_MIL_KINDS: ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista/lantern before their waves
 
 /** Purchase cost for an item of a given kind and tier */
@@ -113,9 +113,9 @@ function pickTier(wave: number): number {
   return max
 }
 
-export const MAX_SHOP_ITEMS = 6
+export const MAX_RESERVES_ITEMS = 6
 
-export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false, lanternUnlocked = false): ShopSlot[] {
+export function generateReserves(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false, lanternUnlocked = false): ReservesSlot[] {
   const itemCount = Math.min(count, MAX_SHOP_ITEMS)
   function makeItem(kind: ItemKind, tier = 1) {
     return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
@@ -162,7 +162,7 @@ export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[],
   }
 
   return pending.map((p, i) => ({
-    id:      `shop_${_shopId++}`,
+    id:      `reserves_${_reservesId++}`,
     item:    p.item,
     cost:    p.cost,
     sold:    false,

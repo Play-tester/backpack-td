@@ -1,13 +1,13 @@
 import { useDrag } from '../context/DragContext'
 import { getItemImage } from '../lib/items'
-import { SHOP_COLS, SHOP_ROWS, type ShopSlot } from '../lib/shop'
+import { RESERVES_COLS, RESERVES_ROWS, type ReservesSlot } from '../lib/reserves'
 import { SHAPE_OFFSETS, shapeDims, type Item, type ItemSize } from '../types'
 import { CELL_SIZE, getSizeDims } from './BackpackGrid'
-import './Shop.css'
+import './Reserves.css'
 
-// ── Shop ───────────────────────────────────────────────────────────────────
+// ── Reserves ──────────────────────────────────────────────────────────────
 interface Props {
-  slots:          ShopSlot[]
+  slots:          ReservesSlot[]
   gold:           number
   rerollCost:     number
   onReroll:       () => void
@@ -16,24 +16,24 @@ interface Props {
   disableReroll?: boolean
 }
 
-const SHOP_CELL = 44   // px per shop grid cell
+const RESERVES_CELL = 44   // px per reserves grid cell
 
-export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, cellSize = CELL_SIZE, disableReroll = false }: Props) {
+export default function Reserves({ slots, gold, rerollCost, onReroll, onSlotClick, cellSize = CELL_SIZE, disableReroll = false }: Props) {
   const { activeDrag, startDrag } = useDrag()
 
   // Build a set of occupied cells → slot id, for rendering
   // For each slot, compute the absolute cells it covers
-  function slotCells(slot: ShopSlot): string[] {
+  function slotCells(slot: ReservesSlot): string[] {
     const offsets = SHAPE_OFFSETS[slot.item.def.size as ItemSize]
     return offsets.map(([dr, dc]) => `${slot.gridRow + dr}-${slot.gridCol + dc}`)
   }
 
-  function handlePointerDown(e: React.PointerEvent, slot: ShopSlot) {
+  function handlePointerDown(e: React.PointerEvent, slot: ReservesSlot) {
     e.preventDefault()
     if (slot.sold || gold < slot.cost) return
     const { rows, cols } = getSizeDims(slot.item.def.size as ItemSize)
     startDrag({
-      source: 'shop',
+      source: 'reserves',
       item: slot.item,
       sourceId: slot.id,
       grabOffsetX: (cols * cellSize) / 2,
@@ -46,36 +46,36 @@ export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, c
   const canReroll = gold >= rerollCost && !disableReroll
 
   // Build lookup: cellKey → slot (the slot whose anchor is responsible for that cell)
-  const cellToSlot = new Map<string, ShopSlot>()
+  const cellToSlot = new Map<string, ReservesSlot>()
   slots.forEach(slot => {
     slotCells(slot).forEach(key => cellToSlot.set(key, slot))
   })
 
   // For each slot, we render one absolutely-positioned item overlay on the grid
   return (
-    <div className="shop-inner">
+    <div className="reserves-inner">
       {/* Grid container */}
       <div
-        className="shop-grid"
+        className="reserves-grid"
         style={{
-          width:  SHOP_COLS * SHOP_CELL + (SHOP_COLS - 1) * 3,
-          height: SHOP_ROWS * SHOP_CELL + (SHOP_ROWS - 1) * 3,
+          width:  RESERVES_COLS * RESERVES_CELL + (RESERVES_COLS - 1) * 3,
+          height: RESERVES_ROWS * RESERVES_CELL + (RESERVES_ROWS - 1) * 3,
           display: 'grid',
-          gridTemplateColumns: `repeat(${SHOP_COLS}, ${SHOP_CELL}px)`,
-          gridTemplateRows:    `repeat(${SHOP_ROWS}, ${SHOP_CELL}px)`,
+          gridTemplateColumns: `repeat(${RESERVES_COLS}, ${RESERVES_CELL}px)`,
+          gridTemplateRows:    `repeat(${RESERVES_ROWS}, ${RESERVES_CELL}px)`,
           gap: 3,
           position: 'relative',
         }}
       >
         {/* Empty grid cells */}
-        {Array.from({ length: SHOP_ROWS }, (_, r) =>
-          Array.from({ length: SHOP_COLS }, (_, c) => {
+        {Array.from({ length: RESERVES_ROWS }, (_, r) =>
+          Array.from({ length: RESERVES_COLS }, (_, c) => {
             const key  = `${r}-${c}`
             const slot = cellToSlot.get(key)
             return (
               <div
                 key={key}
-                className={`shop-grid-cell${slot && !slot.sold ? ' occupied' : ''}${slot && slot.sold ? ' sold-cell' : ''}`}
+                className={`reserves-grid-cell${slot && !slot.sold ? ' occupied' : ''}${slot && slot.sold ? ' sold-cell' : ''}`}
               />
             )
           })
@@ -89,17 +89,17 @@ export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, c
           const isDragging     = activeDrag?.sourceId === slot.id
 
           // Pixel position of anchor
-          const left = slot.gridCol * (SHOP_CELL + 3)
-          const top  = slot.gridRow * (SHOP_CELL + 3)
+          const left = slot.gridCol * (RESERVES_CELL + 3)
+          const top  = slot.gridRow * (RESERVES_CELL + 3)
           // Bounding box size (rows × cols of the shape's bounding rectangle)
-          const width  = cols * SHOP_CELL + (cols - 1) * 3
-          const height = rows * SHOP_CELL + (rows - 1) * 3
+          const width  = cols * RESERVES_CELL + (cols - 1) * 3
+          const height = rows * RESERVES_CELL + (rows - 1) * 3
 
           return (
             <div
               key={slot.id}
               className={[
-                'shop-item-overlay',
+                'reserves-item-overlay',
                 slot.sold               ? 'sold'        : '',
                 !canAfford && !slot.sold ? 'cant-afford' : '',
                 isDragging              ? 'is-dragging'  : '',
@@ -115,10 +115,10 @@ export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, c
                 {offsets.map(([dr, dc]) => (
                   <rect
                     key={`${dr}-${dc}`}
-                    x={dc * (SHOP_CELL + 3)}
-                    y={dr * (SHOP_CELL + 3)}
-                    width={SHOP_CELL}
-                    height={SHOP_CELL}
+                    x={dc * (RESERVES_CELL + 3)}
+                    y={dr * (RESERVES_CELL + 3)}
+                    width={RESERVES_CELL}
+                    height={RESERVES_CELL}
                     rx={6}
                     fill={slot.sold ? '#c0a878' : slot.item.def.color}
                     opacity={slot.sold ? 0.3 : canAfford ? 0.85 : 0.45}
@@ -142,17 +142,17 @@ export default function Shop({ slots, gold, rerollCost, onReroll, onSlotClick, c
 
               {/* SOLD label */}
               {slot.sold && (
-                <span className="shop-sold-label">SOLD</span>
+                <span className="reserves-sold-label">SOLD</span>
               )}
 
               {/* Tier badge */}
               {!slot.sold && slot.item.tier >= 2 && (
-                <span className="shop-tier-badge">{slot.item.tier}</span>
+                <span className="reserves-tier-badge">{slot.item.tier}</span>
               )}
 
               {/* Cost badge */}
               {!slot.sold && (
-                <span className={`shop-cost-badge${!canAfford ? ' too-expensive' : ''}`}>
+                <span className={`reserves-cost-badge${!canAfford ? ' too-expensive' : ''}`}>
                   {slot.cost}g
                 </span>
               )}
