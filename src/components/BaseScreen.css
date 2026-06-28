@@ -23,11 +23,12 @@
   font-weight: 700;
 }
 
-/* restore padding for the content below subtabs */
-.base-screen > *:not(.base-subtabs) {
-  padding-left: 20px; padding-right: 20px;
+.base-content {
+  display: flex; flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 12px;
+  overflow-y: auto; flex: 1;
 }
-.base-screen > h2.base-title { padding-top: 16px; }
 .base-title {
   font-size: 22px; font-weight: 900; font-family: 'Fredoka One', cursive;
   color: #3a1a05; text-align: center; letter-spacing: 1px; text-transform: uppercase;

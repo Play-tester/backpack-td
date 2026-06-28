@@ -56,9 +56,7 @@ export default function BaseScreen({ baseLevel, xp, xpNeeded, permBuffs, pickedB
           onUnlockSpell={onUnlockSpell}
         />
       ) : (
-        <>
-          <h2 className="base-title">Base</h2>
-
+        <div className="base-content">
           <div className="base-level-row">
             <div className="base-lv-badge">Lv.{baseLevel}</div>
             <div className="base-xp-track">
@@ -134,7 +132,7 @@ export default function BaseScreen({ baseLevel, xp, xpNeeded, permBuffs, pickedB
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )
