@@ -85,6 +85,9 @@ const BASE_INCOME   = 3
 const STARTING_GOLD = 20
 const BASE_GRID_CELLS = 9  // 3×3 starting grid
 
+// ── Feature flags ──────────────────────────────────────────────────────────
+const CASTLE_BUFFS_ENABLED = false  // Temporary: mana bar + castle level-up buffs disabled
+
 // Calculate optimal grid dimensions for a given cell count
 function calculateGridDimensions(totalCells: number): { cols: number; rows: number } {
   const cappedCells = Math.min(totalCells, MAX_GRID_COLS * MAX_GRID_ROWS)
@@ -432,19 +435,23 @@ export default function App() {
     setGold(g => g + totalGoldEarned)
 
     // 3. Mana → castle support (temporary buffs, reduced by 50% on loss)
-    const gainedMana = won ? result.manaEarned : Math.floor(result.manaEarned * 0.5)
-    let newMana      = mana + gainedMana
-    let newLevel     = level
+    //    CASTLE_BUFFS_ENABLED = false: skip mana gain and castle level-ups entirely
+    const gainedMana = CASTLE_BUFFS_ENABLED
+      ? (won ? result.manaEarned : Math.floor(result.manaEarned * 0.5))
+      : 0
+    let newMana  = CASTLE_BUFFS_ENABLED ? mana + gainedMana : mana
+    let newLevel = level
 
-    while (newMana >= manaForNextLevel(newLevel)) {
-      newMana -= manaForNextLevel(newLevel)
-      newLevel++
-    }
-    setMana(newMana)
-
-    if (newLevel > level) {
-      setLevel(newLevel)
-      setPendingLvlUp({ toLevel: newLevel, choices: pickThreeUpgrades() })
+    if (CASTLE_BUFFS_ENABLED) {
+      while (newMana >= manaForNextLevel(newLevel)) {
+        newMana -= manaForNextLevel(newLevel)
+        newLevel++
+      }
+      setMana(newMana)
+      if (newLevel > level) {
+        setLevel(newLevel)
+        setPendingLvlUp({ toLevel: newLevel, choices: pickThreeUpgrades() })
+      }
     }
 
     // 4. XP → base level up (permanent buffs, reduced by 50% on loss)
@@ -466,9 +473,11 @@ export default function App() {
     }
 
     // 4. Tick down temporary buff grants (regardless of win/loss)
-    setBuffGrants(prev =>
-      prev.map(g => ({ ...g, wavesLeft: g.wavesLeft - 1 })).filter(g => g.wavesLeft > 0)
-    )
+    if (CASTLE_BUFFS_ENABLED) {
+      setBuffGrants(prev =>
+        prev.map(g => ({ ...g, wavesLeft: g.wavesLeft - 1 })).filter(g => g.wavesLeft > 0)
+      )
+    }
 
     // 5. Popup result; shop + wave only advance on a win
     // Adjust gold values if total was less than 1 (guaranteed minimum)
@@ -900,6 +909,24 @@ export default function App() {
     )
   }
 
+  // ── Game Shop (full-screen, same level as other tabs) ────────────────────
+  if (showGameShop) {
+    return (
+      <div className="game-container" style={{ display: 'flex', flexDirection: 'column' }}>
+        <GameShop
+          gold={gold} wood={wood} runes={runes}
+          onClose={() => setShowGameShop(false)}
+          onEarn={reward => {
+            if (reward.gold)  setGold(g  => g  + (reward.gold  ?? 0))
+            if (reward.wood)  setWood(w  => w  + (reward.wood  ?? 0))
+            if (reward.runes) setRunes(r => r  + (reward.runes ?? 0))
+          }}
+        />
+        <BottomNav activeTab={activeTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={tab => { setShowGameShop(false); setActiveTab(tab) }} />
+      </div>
+    )
+  }
+
   // ── Base tab ───────────────────────────────────────────────────────────────
   if (activeTab === 'base') {
     return (
@@ -994,17 +1021,6 @@ export default function App() {
         onCheatGold={() => setGold(g => g + 100)}
         onCheatWave={w => setWave(w)}
       />
-      {showGameShop && (
-        <GameShop
-          gold={gold} wood={wood} runes={runes}
-          onClose={() => setShowGameShop(false)}
-          onEarn={reward => {
-            if (reward.gold)  setGold(g  => g  + (reward.gold  ?? 0))
-            if (reward.wood)  setWood(w  => w  + (reward.wood  ?? 0))
-            if (reward.runes) setRunes(r => r  + (reward.runes ?? 0))
-          }}
-        />
-      )}
     </DragProvider>
   )
 }
@@ -1114,6 +1130,7 @@ function TradeUI({
             <span className="resource-label">Gold</span>
             <strong>{gold}</strong>
           </span>
+          {CASTLE_BUFFS_ENABLED && (
           <span className="resource">
             <span className="resource-icon">🏰</span>
             <span className="mana-bar-wrap">
@@ -1121,6 +1138,7 @@ function TradeUI({
             </span>
             <span className="mana-text">{mana}/{manaNeeded}</span>
           </span>
+          )}
           <span className="resource">
             <span className="resource-label">Base.<strong>{baseLevel}</strong></span>
             <span className="xp-bar-wrap">
@@ -1131,7 +1149,7 @@ function TradeUI({
         </div>
       </header>
 
-      {buffGrants.length > 0 && (
+      {CASTLE_BUFFS_ENABLED && buffGrants.length > 0 && (
         <div className="buffs-bar">
           {buffGrants.map((g, i) => (
             <span key={i} className="buff-chip">
@@ -1161,9 +1179,11 @@ function TradeUI({
           />
         </div>
         <div className="battle-btn-row">
+          {wave >= 5 && (
           <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
-            🏪
+            <img src="/Heroes/shop_icon.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
           </button>
+          )}
           <button
             className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
             onClick={onStartBattle}
@@ -1201,7 +1221,7 @@ function TradeUI({
         <Tooltip item={tooltip.item} x={tooltip.x} y={tooltip.y} />
       </>}
 
-      {pendingLvlUp && (
+      {CASTLE_BUFFS_ENABLED && pendingLvlUp && (
         <LevelUpModal
           variant="castle"
           choices={pendingLvlUp.choices}
