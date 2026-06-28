@@ -44,8 +44,38 @@ export default function CraftingScreen({
           const canAfford = gold >= costGold && wood >= woodCost
           const isLocked = !canAfford && level === 0
 
+          const unresearched = level === 0
+
+          // ── Silhouette card for unresearched upgrades ──────────────────────
+          if (unresearched) {
+            return (
+              <div key={upg.id} className="crafting-card crafting-card--silhouette">
+                <div className="crafting-card-header">
+                  <span className="crafting-card-icon crafting-silhouette-icon">🔒</span>
+                  <div className="crafting-card-info">
+                    <span className="crafting-silhouette-bar crafting-silhouette-bar--name" />
+                    <span className="crafting-silhouette-bar crafting-silhouette-bar--desc" />
+                    <span className="crafting-silhouette-bar crafting-silhouette-bar--desc crafting-silhouette-bar--short" />
+                  </div>
+                </div>
+                <button
+                  className={`crafting-upgrade-btn ${canAfford ? '' : 'crafting-upgrade-btn--disabled'}`}
+                  onClick={() => canAfford && onUpgrade(upg.id)}
+                  disabled={!canAfford}
+                >
+                  <span className="crafting-cost">
+                    💰 {costGold}
+                    {woodCost > 0 && <> &nbsp; 🪵 {woodCost}</>}
+                  </span>
+                  <span className="crafting-upgrade-label">Unlock</span>
+                </button>
+              </div>
+            )
+          }
+
+          // ── Normal card for researched upgrades ────────────────────────────
           return (
-            <div key={upg.id} className={`crafting-card ${maxed ? 'crafting-card--maxed' : ''} ${isLocked ? 'crafting-card--locked' : ''}`}>
+            <div key={upg.id} className={`crafting-card ${maxed ? 'crafting-card--maxed' : ''}`}>
               <div className="crafting-card-header">
                 <span className="crafting-card-icon">{upg.icon}</span>
                 <div className="crafting-card-info">

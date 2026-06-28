@@ -42,6 +42,32 @@
   opacity: 0.7;
 }
 
+/* ── Silhouette card (unresearched) ─────────────────────────────────────── */
+.crafting-card--silhouette {
+  background: #e8d4a8;
+  border-color: #b8a07a;
+  box-shadow: 2px 2px 0 #a08858;
+}
+.crafting-silhouette-icon {
+  filter: grayscale(1) brightness(0.3);
+  opacity: 0.5;
+}
+.crafting-silhouette-bar {
+  display: block;
+  border-radius: 6px;
+  background: #b8a07a;
+  opacity: 0.5;
+}
+.crafting-silhouette-bar--name {
+  width: 120px; height: 14px; margin-bottom: 6px;
+}
+.crafting-silhouette-bar--desc {
+  width: 160px; height: 10px; margin-bottom: 4px;
+}
+.crafting-silhouette-bar--short {
+  width: 100px;
+}
+
 .crafting-card-header {
   display: flex; align-items: flex-start; gap: 12px;
 }
