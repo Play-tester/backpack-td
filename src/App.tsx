@@ -1192,11 +1192,13 @@ function TradeUI({
         </div>
       </section>
 
-      {wave >= 5 && (
-        <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
-          <img src="/Heroes/shop_icon.png" alt="" style={{ width: 49, height: 49, objectFit: 'contain' }} />
-        </button>
-      )}
+      <div className="zone-divider">
+        {wave >= 5 && (
+          <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
+            <img src="/Heroes/shop_icon.png" alt="" style={{ width: 49, height: 49, objectFit: 'contain' }} />
+          </button>
+        )}
+      </div>
 
       <section className={`zone reserves-zone${tutorialConfig?.highlightShop ? ' tutorial-highlight' : ''}`}>
         <div className="zone-label">Reserves</div>
