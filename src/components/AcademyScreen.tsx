@@ -19,15 +19,15 @@ export default function AcademyScreen({ hasAcademy, unlockedSpells, gold, wave, 
         <div className="academy-no-building">
           <div className="academy-lock-icon">🎓</div>
           <div className="academy-lock-msg">
-            {wave < 10 ? (
+            {wave < 8 ? (
               <>
-                Academy building becomes available in the Shop from{' '}
-                <strong>Wave 10</strong>.<br />
+                Academy building becomes available in the Reserves from{' '}
+                <strong>Wave 8</strong>.<br />
                 Purchase and place it in your backpack to unlock spells.
               </>
             ) : (
               <>
-                Purchase an <strong>Academy</strong> building from the Shop
+                Purchase an <strong>Academy</strong> building from the Reserves
                 and place it in your backpack to unlock spells.
               </>
             )}

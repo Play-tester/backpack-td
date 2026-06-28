@@ -145,8 +145,8 @@ export function generateReserves(count = 3, wave = 1, tutorialForceItems?: strin
       pending[replaceIdx] = makeItem(militaryKind, 1)
     }
 
-    // Wave 10+: 35% chance to include an Academy slot (always tier 1, fixed cost)
-    if (wave >= 10 && !pending.some(s => s.item.def.kind === 'academy') && Math.random() < 0.35) {
+    // Wave 8+: 35% chance to include an Academy slot (always tier 1, fixed cost)
+    if (wave >= 8 && !pending.some(s => s.item.def.kind === 'academy') && Math.random() < 0.35) {
       pending[pending.length - 1] = makeItem('academy', 1)
     }
   }

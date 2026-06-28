@@ -25,7 +25,7 @@ function fmtCooldown(ms: number): string {
 }
 
 const AD_VIDEO_ID = 'j964S-ku_P0'
-const AD_DURATION_S = 57  // length of the Short in seconds
+const AD_DURATION_S = 30  // seconds required to watch before reward is granted
 
 // Resolves true when the user has watched enough, false if they closed early
 function showRewardedAd(): Promise<boolean> {
