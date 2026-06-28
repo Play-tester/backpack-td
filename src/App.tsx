@@ -28,7 +28,6 @@ import World1CompleteScreen from './components/World1CompleteScreen'
 import WorldMapScreen from './components/WorldMapScreen'
 import BottomNav, { type Tab } from './components/BottomNav'
 import BaseScreen from './components/BaseScreen'
-import AcademyScreen from './components/AcademyScreen'
 import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
@@ -166,7 +165,6 @@ export default function App() {
   // ── Crafting state ─────────────────────────────────────────────────────────
   const [wood, setWood]                             = useState(savedGame?.wood ?? 0)
   const [runes, setRunes]                           = useState(savedGame?.runes ?? 0)
-  const [showGameShop, setShowGameShop]             = useState(false)
   const [craftingState, setCraftingState]           = useState<CraftingState>(savedGame?.craftingState ?? getInitialCraftingState())
   const [craftingUnlocked, setCraftingUnlocked]     = useState(savedGame?.craftingUnlocked ?? false)
   const [showShieldIntro, setShowShieldIntro]       = useState(false)
@@ -909,49 +907,37 @@ export default function App() {
     )
   }
 
-  // ── Game Shop (full-screen, same level as other tabs) ────────────────────
-  if (showGameShop) {
+  // ── Shop tab ──────────────────────────────────────────────────────────────
+  if (activeTab === 'shop') {
     return (
       <div className="game-container" style={{ display: 'flex', flexDirection: 'column' }}>
         <GameShop
           gold={gold} wood={wood} runes={runes}
-          onClose={() => setShowGameShop(false)}
+          onClose={() => setActiveTab('battle')}
           onEarn={reward => {
             if (reward.gold)  setGold(g  => g  + (reward.gold  ?? 0))
             if (reward.wood)  setWood(w  => w  + (reward.wood  ?? 0))
             if (reward.runes) setRunes(r => r  + (reward.runes ?? 0))
           }}
         />
-        <BottomNav activeTab={activeTab} hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={tab => { setShowGameShop(false); setActiveTab(tab) }} />
+        <BottomNav activeTab="shop" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
       </div>
     )
   }
 
-  // ── Base tab ───────────────────────────────────────────────────────────────
+  // ── Base tab (includes Academy sub-tab) ───────────────────────────────────
   if (activeTab === 'base') {
     return (
       <div className="game-container">
         <BaseScreen
           baseLevel={baseLevel} xp={xp} xpNeeded={xpNeeded}
           permBuffs={permBuffs} pickedBasePerks={pickedBasePerks}
-        />
-        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
-      </div>
-    )
-  }
-
-  // ── Academy tab ────────────────────────────────────────────────────────────
-  if (activeTab === 'academy') {
-    return (
-      <div className="game-container">
-        <AcademyScreen
           hasAcademy={hasAcademy}
           unlockedSpells={unlockedSpells}
-          gold={gold}
-          wave={wave}
+          gold={gold} wave={wave}
           onUnlockSpell={handleUnlockSpell}
         />
-        <BottomNav activeTab="academy" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
+        <BottomNav activeTab="base" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
       </div>
     )
   }
@@ -1008,7 +994,7 @@ export default function App() {
           }
         }}
         runes={runes}
-        onOpenShop={() => setShowGameShop(true)}
+        onOpenShop={() => setActiveTab('shop')}
         onStartBattle={() => {
           setRoundResult(null)
           setHasDeployedInPrep(false)

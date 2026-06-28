@@ -1,6 +1,6 @@
 import './BottomNav.css'
 
-export type Tab = 'battle' | 'base' | 'academy' | 'heroes' | 'crafting'
+export type Tab = 'battle' | 'base' | 'heroes' | 'crafting' | 'shop'
 
 interface Props {
   activeTab: Tab
@@ -13,9 +13,8 @@ interface Props {
   onTabChange: (tab: Tab) => void
 }
 
-export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHeroes, hasCrafting, heroesTabPulse, craftingTabPulse, onTabChange }: Props) {
-  const baseUnlocked    = hasBasePerks
-  const academyUnlocked = hasAcademy
+export default function BottomNav({ activeTab, hasBasePerks, hasAcademy: _hasAcademy, hasHeroes, hasCrafting, heroesTabPulse, craftingTabPulse, onTabChange }: Props) {
+  const baseUnlocked = hasBasePerks
 
   return (
     <nav className="bottom-nav">
@@ -46,12 +45,11 @@ export default function BottomNav({ activeTab, hasBasePerks, hasAcademy, hasHero
         <span className="nav-label">Battle</span>
       </button>
       <button
-        className={`nav-btn${activeTab === 'academy' ? ' nav-active' : ''}${!academyUnlocked ? ' nav-soft-locked' : ''}`}
-        onClick={() => onTabChange('academy')}
+        className={`nav-btn${activeTab === 'shop' ? ' nav-active' : ''}`}
+        onClick={() => onTabChange('shop')}
       >
-        <span className="nav-icon">🎓</span>
-        <span className="nav-label">Academy</span>
-        {!academyUnlocked && <span className="nav-lock-badge">🔒</span>}
+        <span className="nav-icon">🏪</span>
+        <span className="nav-label">Shop</span>
       </button>
       <button
         className={`nav-btn${activeTab === 'base' ? ' nav-active' : ''}${!baseUnlocked ? ' nav-soft-locked' : ''}`}
