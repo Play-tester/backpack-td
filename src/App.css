@@ -634,17 +634,24 @@
 .btn-continue:hover  { transform: translateY(-2px); box-shadow: 5px 5px 0 #3a1a05; }
 .btn-continue:active { transform: translateY(1px); box-shadow: 1px 1px 0 #3a1a05; }
 
-/* ── Battle button row ── */
-.battle-btn-row {
-  position: relative;
-  display: flex; align-items: center; justify-content: center;
+/* ── Battle area row (shop left + wave centered + spacer right) ── */
+.battle-area-row {
+  display: flex; align-items: center;
   margin-top: 4px;
+  padding: 0 8px;
+  gap: 0;
+}
+.battle-btn-row {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-shop-placeholder {
+  width: 38px; height: 38px; flex-shrink: 0;
 }
 
 .btn-shop-open {
-  position: absolute; left: 8px;
-  height: 38px;
-  aspect-ratio: 1;
+  flex-shrink: 0;
+  width: 38px; height: 38px;
   background: transparent;
   border: none;
   border-radius: 10px;
