@@ -116,7 +116,7 @@ function pickTier(wave: number): number {
 export const MAX_RESERVES_ITEMS = 6
 
 export function generateReserves(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false, lanternUnlocked = false): ReservesSlot[] {
-  const itemCount = Math.min(count, MAX_SHOP_ITEMS)
+  const itemCount = Math.min(count, MAX_RESERVES_ITEMS)
   function makeItem(kind: ItemKind, tier = 1) {
     return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
   }
