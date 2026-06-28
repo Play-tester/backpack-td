@@ -305,14 +305,33 @@ function drawTower(ctx: CanvasRenderingContext2D, t: BattleTower) {
 
   const img = t.image ? getCachedImage(t.image) : null
 
-  // Range circle (dotted)
+  // Range circle — amber for lantern (reveal radius), grey for combat towers
   ctx.save()
-  ctx.strokeStyle = 'rgba(100,100,100,0.9)'
-  ctx.lineWidth = 3
-  ctx.setLineDash([5, 5])
-  ctx.beginPath()
-  ctx.arc(t.x, t.y, t.rangePx, 0, Math.PI * 2)
-  ctx.stroke()
+  if (t.revealRadius > 0) {
+    // Lantern: draw reveal radius as warm amber glow ring
+    ctx.strokeStyle = 'rgba(251,191,36,0.85)'
+    ctx.lineWidth = 3
+    ctx.setLineDash([6, 4])
+    ctx.shadowColor = '#fbbf24'
+    ctx.shadowBlur  = 6
+    ctx.beginPath()
+    ctx.arc(t.x, t.y, t.revealRadius, 0, Math.PI * 2)
+    ctx.stroke()
+    // Soft fill inside
+    ctx.globalAlpha = 0.06
+    ctx.fillStyle = '#fde68a'
+    ctx.beginPath()
+    ctx.arc(t.x, t.y, t.revealRadius, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = 1
+  } else {
+    ctx.strokeStyle = 'rgba(100,100,100,0.9)'
+    ctx.lineWidth = 3
+    ctx.setLineDash([5, 5])
+    ctx.beginPath()
+    ctx.arc(t.x, t.y, t.rangePx, 0, Math.PI * 2)
+    ctx.stroke()
+  }
   ctx.setLineDash([])
   ctx.restore()
 
@@ -377,6 +396,7 @@ const ENEMY_SHEETS: Record<string, EnemySheet> = {
   trojan: { src: '/trojan_a.png',          frameW: 887, frameH: 443, drawW: 90, drawH: 45 },
   shield: { src: '/shield_bearer_a.png',   frameW: 887, frameH: 443, drawW: 58, drawH: 29 },
   crow:   { src: '/crow_a.png',            frameW: 887, frameH: 443, drawW: 44, drawH: 22 },
+  druid:  { src: '/druid_a.png',           frameW: 887, frameH: 443, drawW: 52, drawH: 26 },
 }
 
 function drawTrojan(ctx: CanvasRenderingContext2D, e: Enemy) {
@@ -475,6 +495,37 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
     return
   }
 
+  // ── Druid: ghost rendering when phased ───────────────────────────────────
+  if (e.kind === 'druid' && e.phased) {
+    const sheet = ENEMY_SHEETS['druid']
+    const EW = sheet?.drawW ?? 52, EH = sheet?.drawH ?? 26
+    const x0 = e.x - EW / 2, y0 = e.y - EH / 2
+    ctx.save()
+    ctx.globalAlpha = 0.35
+    ctx.shadowColor = '#c4b5fd'
+    ctx.shadowBlur  = 14
+    if (sheet) {
+      const img = getCachedImage(sheet.src)
+      if (img) {
+        const phaseOffset = (parseInt(e.id.replace(/\D/g, ''), 10) % FRAME_COUNT) / ANIM_FPS
+        const frame = Math.floor((elapsed + phaseOffset) * ANIM_FPS) % FRAME_COUNT
+        ctx.drawImage(img, 0, frame * sheet.frameH, sheet.frameW, sheet.frameH, x0, y0, EW, EH)
+      } else {
+        ctx.fillStyle = '#a78bfa'
+        ctx.beginPath(); (ctx as any).roundRect(x0, y0, EW, EH, 4); ctx.fill()
+      }
+    }
+    ctx.restore()
+    // Show a faint HP bar so player knows it exists
+    ctx.globalAlpha = 0.4
+    ctx.fillStyle = '#0d1b2a'; ctx.fillRect(x0, y0 - 7, EW, 4)
+    const pct = Math.max(0, e.hp / e.maxHp)
+    ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#fbbf24' : '#f87171'
+    ctx.fillRect(x0, y0 - 7, EW * pct, 4)
+    ctx.globalAlpha = 1
+    return
+  }
+
   // ── Aerial crow: draw ground shadow, then sprite elevated above it ────────
   if (e.aerial) {
     const sheet = ENEMY_SHEETS['crow']
@@ -565,6 +616,14 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, elapsed: number) {
     ctx.textBaseline = 'middle'
     ctx.fillStyle = 'rgba(255,255,255,0.8)'
     ctx.fillText('❄', e.x, e.y)
+  }
+
+  // Druid phase indicator — ghost icon when visible but about to phase
+  if (e.kind === 'druid') {
+    ctx.font = '8px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'
+    ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 3
+    ctx.fillText('👻', e.x, y0 - 7)
+    ctx.shadowBlur = 0
   }
 
   // Shield resistance indicator — small shield icon above HP bar
@@ -696,6 +755,7 @@ const ENEMY_COLOR: Record<string, string> = {
   trojan: '#8b5e3c',   // wooden brown
   shield: '#16a34a',   // Celtic green
   crow:   '#1e1b4b',   // dark indigo — ominous war crow
+  druid:  '#a78bfa',   // pale violet — ghostly druid
 }
 
 export default function BattleCanvas({ deployedTowers, wave, buffs = DEFAULT_BUFFS, onBattleEnd, tutorialLimitEnemies, pendingSpellRef, pendingHeroRef, heroShards = 0, craftingState }: Props) {

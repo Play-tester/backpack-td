@@ -6,7 +6,8 @@ export const ITEM_COSTS: Record<ItemKind, number> = {
   archer:   3,
   cannon:   6,
   frost:    4,
-  ballista: 8,   // premium — the only counter to aerial units
+  ballista: 8,   // premium — anti-aerial specialist
+  lantern:  5,   // utility — reveals/pins phasing druids
   bank:     5,
   shop:     4,
   academy:  20,
@@ -53,8 +54,8 @@ function placeItemsOnGrid(items: { size: ItemSize }[]): { col: number; row: numb
 }
 
 let _shopId = 1
-const ALL_KINDS:       ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'bank', 'shop']
-const EARLY_MIL_KINDS: ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista before wave 13 / research
+const ALL_KINDS:       ItemKind[] = ['archer', 'cannon', 'frost', 'ballista', 'lantern', 'bank', 'shop']
+const EARLY_MIL_KINDS: ItemKind[] = ['archer', 'cannon', 'frost']  // no ballista/lantern before their waves
 
 /** Purchase cost for an item of a given kind and tier */
 export function getItemCost(kind: ItemKind, tier: number): number {
@@ -114,7 +115,7 @@ function pickTier(wave: number): number {
 
 export const MAX_SHOP_ITEMS = 6
 
-export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false): ShopSlot[] {
+export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[], ballistaUnlocked = false, lanternUnlocked = false): ShopSlot[] {
   const itemCount = Math.min(count, MAX_SHOP_ITEMS)
   function makeItem(kind: ItemKind, tier = 1) {
     return { item: createItem(kind, tier), cost: getItemCost(kind, tier) }
@@ -126,8 +127,12 @@ export function generateShop(count = 3, wave = 1, tutorialForceItems?: string[],
   if (tutorialForceItems && tutorialForceItems.length > 0) {
     pending = tutorialForceItems.map(kind => makeItem(kind as ItemKind, 1))
   } else {
-    // Ballista only appears from wave 13+ AND only if researched in Crafting
-    const availableKinds = (wave >= 13 && ballistaUnlocked) ? ALL_KINDS : ALL_KINDS.filter(k => k !== 'ballista')
+    // Ballista: wave 13+ AND researched. Lantern: wave 17+ AND researched.
+    const availableKinds = ALL_KINDS.filter(k => {
+      if (k === 'ballista') return wave >= 13 && ballistaUnlocked
+      if (k === 'lantern')  return wave >= 17 && lanternUnlocked
+      return true
+    })
     pending = Array.from({ length: itemCount }, () => {
       const kind = availableKinds[Math.floor(Math.random() * availableKinds.length)]
       return makeItem(kind, pickTier(wave))

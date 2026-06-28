@@ -52,6 +52,7 @@ export type ItemKind =
   | 'cannon'    // military – slow, splash
   | 'frost'     // military – slow effect
   | 'ballista'  // military – slow, high damage, targets aerial only
+  | 'lantern'   // utility  – no damage; reveals/pins phased druids within radius
   | 'bank'      // economic – flat gold per round
   | 'shop'      // economic – small, cheap, earns 1 gold per win
   | 'academy'   // special  – 2×2 building, unlocks spells

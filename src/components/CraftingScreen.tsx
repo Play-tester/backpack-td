@@ -4,6 +4,7 @@ import { CRAFTING_UPGRADES, type CraftingState } from '../lib/crafting'
 interface Props {
   gold: number
   wood: number
+  wave: number
   craftingState: CraftingState
   onUpgrade: (upgradeId: string) => void
   showVillageGiftPopup?: boolean
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export default function CraftingScreen({
-  gold, wood, craftingState, onUpgrade,
+  gold, wood, wave, craftingState, onUpgrade,
   showVillageGiftPopup, onCloseVillageGift,
 }: Props) {
   return (
@@ -33,7 +34,7 @@ export default function CraftingScreen({
       <p className="crafting-subtitle">Forge upgrades to gain the edge in battle</p>
 
       <div className="crafting-upgrades">
-        {Object.values(CRAFTING_UPGRADES).map(upg => {
+        {Object.values(CRAFTING_UPGRADES).filter(upg => wave >= (upg.minWave ?? 0)).map(upg => {
           const level = craftingState[upg.id] ?? 0
           const maxed = level >= upg.maxLevel
           const costGold = upg.costGold(level)

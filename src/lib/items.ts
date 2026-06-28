@@ -68,6 +68,27 @@ export const ITEM_DEFS: Record<ItemKind, ItemDef> = {
 
     maxTier: 7,
   },
+  lantern: {
+    kind: 'lantern',
+    category: 'military',
+    size: '1x1',
+    label: 'Lantern',
+    color: '#fde68a',
+    image: '/lantern_tower.png',
+    tierImages: [
+      '/lantern_tower_T1.png',
+      '/lantern_tower_T2.png',
+      '/lantern_tower_T3.png',
+      '/lantern_tower_T4.png',
+      '/lantern_tower_T5.png',
+      '/lantern_tower_T6.png',
+      '/lantern_tower_T7.png',
+    ],
+    damage: 0,           // pure utility — no damage
+    attackSpeed: 0,      // never fires
+    range: 3,
+    maxTier: 7,
+  },
   ballista: {
     kind: 'ballista',
     category: 'military',

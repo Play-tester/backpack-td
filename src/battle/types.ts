@@ -102,7 +102,7 @@ export function isExtZigzagWave(wave: number): boolean {
 
 export type BattlePhase = 'fighting' | 'won' | 'lost'
 
-export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm' | 'trojan' | 'shield' | 'crow'
+export type EnemyKind = 'grunt' | 'runner' | 'tank' | 'swarm' | 'trojan' | 'shield' | 'crow' | 'druid'
 
 /** A tower the player has manually placed onto the battle arena */
 export interface DeployedTower {
@@ -126,6 +126,8 @@ export interface Enemy {
   damageResist?: Partial<Record<string, number>>  // tower kind → damage multiplier (e.g. archer → 0.3)
   aerial?: boolean                        // flies over the battlefield — only Ballista can target it
   laneX?: number                          // for aerial units: fixed x column they fly through
+  phaseTimer?: number                     // druid: counts phase cycle (0–3s loop)
+  phased?: boolean                        // druid: currently immune/invisible
 }
 
 export function isBossWave(wave: number): boolean {
@@ -146,9 +148,10 @@ export interface BattleTower {
   tier: number
   shapeCols: number    // bounding-box columns (for display size)
   shapeRows: number    // bounding-box rows    (for display size)
-  splashRadius: number // 0 = no splash
-  slowDuration: number // 0 = no slow
-  flashTimer: number   // brief highlight when firing
+  splashRadius: number  // 0 = no splash
+  slowDuration: number  // 0 = no slow
+  flashTimer: number    // brief highlight when firing
+  revealRadius: number  // 0 = no reveal; >0 = pins phased druids visible within this radius
 }
 
 export interface Projectile {

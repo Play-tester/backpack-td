@@ -1,7 +1,7 @@
 import { getItemImage, getMilitaryDamageMultiplier, getMilitaryRangeMultiplier } from '../lib/items'
 import { DEFAULT_BUFFS, type Buffs } from '../lib/levelup'
 import { HERO_DEFS, getEffectiveStats, type HeroKind } from '../lib/heroes'
-import { getPiercingArrowsResist, type CraftingState } from '../lib/crafting'
+import { getPiercingArrowsResist, LANTERN_DEBUFF_BY_TIER, type CraftingState } from '../lib/crafting'
 import { shapeDims, type ItemSize } from '../types'
 import {
   BATTLE_H, LANE_CX, ZIGZAG_WAYPOINTS, isZigzagWave, isLongWave,
@@ -132,6 +132,7 @@ const ENEMY_STATS: Record<EnemyKind, { hp: number; speed: number; gold: number; 
   trojan: { hp: 800, speed: 30,  gold: 10 }, // boss — high HP, very slow, releases grunts on death
   shield: { hp: 110, speed: 55,  gold: 2  }, // Celtic shield bearer — absorbs 70% archer damage
   crow:   { hp: 60,  speed: 90,  gold: 2  }, // War Crow (Badb Catha) — aerial, only ballista can hit
+  druid:  { hp: 90,  speed: 55,  gold: 3  }, // Fallen Druid — phases in/out; Lantern pins it visible
 }
 
 // Enemies released when the Trojan Horse dies
@@ -159,8 +160,10 @@ function getWaveConfig(wave: number): WaveConfig {
   if (wave <= 10) return { count: 8 + (wave - 5) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm'] }
   // waves 11–12: shield bearer added
   if (wave <= 12) return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield'] }
-  // waves 13+: War Crows join — aerial, only ballista can hit them
-  return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield', 'crow'] }
+  // waves 13–16: War Crows join
+  if (wave <= 16) return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield', 'crow'] }
+  // waves 17+: Fallen Druids join — phase in/out, Lantern pins them
+  return { count: 10 + (wave - 11) * 2, kinds: ['grunt', 'runner', 'tank', 'swarm', 'shield', 'crow', 'druid'] }
 }
 
 /** Build a shuffled spawn sequence with the correct count of each kind */
@@ -188,8 +191,9 @@ function buildSpawnQueue(config: WaveConfig): EnemyKind[] {
 
 // ── Tower kind stats ───────────────────────────────────────────────────────
 export const KIND_RANGE: Record<string, number> = { archer: 80, cannon: 115, frost: 70, ballista: 140 }
-const KIND_SPLASH: Record<string, number>   = { cannon: 32 }
-const KIND_SLOW_DUR: Record<string, number> = { frost: 2.5 }
+const KIND_SPLASH: Record<string, number>      = { cannon: 32 }
+const KIND_SLOW_DUR: Record<string, number>    = { frost: 2.5 }
+const KIND_REVEAL_RADIUS: Record<string, number> = { lantern: 100 }  // px — pins druids visible
 // Ground towers can't target aerial; ballista targets both but deals 50% dmg to ground
 const KIND_GROUND_ONLY  = new Set(['archer', 'cannon', 'frost'])
 
@@ -245,6 +249,10 @@ function spawnEnemy(kind: EnemyKind, wave: number, startDist = 0, laneX?: number
   }
   if (kind === 'trojan') enemy.spawnsOnDeath = [...TROJAN_RELEASE]
   if (kind === 'shield') enemy.damageResist = { archer: _shieldArcherResist }  // crafting-aware resist
+  if (kind === 'druid') {
+    enemy.phaseTimer = Math.random() * 3  // stagger phase cycles so druids don't all sync
+    enemy.phased = false
+  }
   if (kind === 'crow') {
     enemy.aerial = true
     // Crows fly straight across the canvas at a random x column — ignoring the ground path
@@ -292,9 +300,10 @@ export function initBattle(
       tier:         item.tier,
       shapeCols,
       shapeRows,
-      splashRadius: KIND_SPLASH[item.def.kind]   ?? 0,
-      slowDuration: KIND_SLOW_DUR[item.def.kind] ?? 0,
-      flashTimer:   0,
+      splashRadius:  KIND_SPLASH[item.def.kind]        ?? 0,
+      slowDuration:  KIND_SLOW_DUR[item.def.kind]      ?? 0,
+      revealRadius:  KIND_REVEAL_RADIUS[item.def.kind] ?? 0,
+      flashTimer:    0,
     })
   }
 
@@ -437,6 +446,28 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
     }
   }
 
+  // ── Druid phase tick + Lantern reveal ────────────────────────────────────
+  // Phase cycle: 0–2s = visible, 2–3s = phased (immune). Loop every 3s.
+  // A Lantern tower within revealRadius pins the druid visible regardless.
+  const PHASE_VISIBLE_DUR = 2.0
+  const PHASE_CYCLE_DUR   = 3.0
+  for (const e of enemies) {
+    if (e.kind !== 'druid') continue
+    e.phaseTimer = ((e.phaseTimer ?? 0) + dt) % PHASE_CYCLE_DUR
+    const wantPhased = e.phaseTimer >= PHASE_VISIBLE_DUR
+    if (wantPhased) {
+      // Check if any lantern tower pins it visible
+      const pinned = towers.some(t => {
+        if (t.revealRadius <= 0) return false
+        const dx = e.x - t.x, dy = e.y - t.y
+        return Math.sqrt(dx * dx + dy * dy) <= t.revealRadius
+      })
+      e.phased = !pinned
+    } else {
+      e.phased = false
+    }
+  }
+
   // ── Hero tick ────────────────────────────────────────────────────────────
   let hero: BattleHero | null = prev.hero ? { ...prev.hero } : null
   if (hero && !hero.dead) {
@@ -510,9 +541,16 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
     tower.flashTimer = Math.max(0, tower.flashTimer - dt)
     if (tower.cooldown > 0) continue
 
-    // Target: ground towers skip aerial; ballista can hit both.
-    const groundOnly  = KIND_GROUND_ONLY.has(tower.kind)
-    const validTargets = groundOnly ? enemies.filter(e => !e.aerial) : enemies
+    // Lantern is pure utility — never attacks
+    if (tower.kind === 'lantern') continue
+
+    // Target: ground towers skip aerial; ballista can hit both. All towers skip phased druids.
+    const groundOnly   = KIND_GROUND_ONLY.has(tower.kind)
+    const validTargets = enemies.filter(e => {
+      if (e.phased) return false          // phased druids are untargetable
+      if (groundOnly && e.aerial) return false
+      return true
+    })
     let target: Enemy | null = null
     if (isExtZigzagWave(prev.wave) || isZigzagWave(prev.wave)) {
       // 2D distance; priority = furthest along path
@@ -612,7 +650,19 @@ export function tickBattle(prev: BattleState, dt: number): BattleState {
         const resist = hit.damageResist?.[p.kind] ?? 1
         // Ballista deals 50% damage to ground enemies (specialised anti-aerial weapon)
         const aerialMult = (p.kind === 'ballista' && !hit.aerial) ? 0.5 : 1
-        hit.hp -= Math.round(p.damage * resist * aerialMult)
+        // Lantern debuff: non-druid enemies inside a lantern's reveal radius take bonus damage
+        let lanternMult = 1.0
+        if (hit.kind !== 'druid') {
+          for (const t of towers) {
+            if (t.kind !== 'lantern' || t.revealRadius <= 0) continue
+            const ldx = hit.x - t.x, ldy = hit.y - t.y
+            if (Math.sqrt(ldx * ldx + ldy * ldy) <= t.revealRadius) {
+              const bonus = LANTERN_DEBUFF_BY_TIER[Math.min(t.tier, LANTERN_DEBUFF_BY_TIER.length) - 1] ?? 0.10
+              lanternMult = Math.max(lanternMult, 1 + bonus)  // take highest lantern if multiple overlap
+            }
+          }
+        }
+        hit.hp -= Math.round(p.damage * resist * aerialMult * lanternMult)
         if (p.splashRadius > 0) {
           for (const e of alive) {
             if (e.id !== p.targetId && Math.abs(e.y - p.ty) <= p.splashRadius) {

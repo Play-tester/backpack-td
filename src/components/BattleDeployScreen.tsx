@@ -360,11 +360,18 @@ export default function BattleDeployScreen({ placedItems, buffs, wave, gridRows,
             if (!item) return null
             const baseRange = item.def.kind === 'ballista' ? ballistaRange(item.tier) : (KIND_RANGE[item.def.kind] ?? 115)
             const rangePx = Math.round(baseRange * (buffs?.rangeBonus ?? 1))
+            const isLantern = item.def.kind === 'lantern'
             return (
               <circle
                 key={slot.id}
                 cx={slot.x} cy={slot.y} r={rangePx}
-                style={{ fill: 'none', stroke: '#646464', strokeOpacity: 0.9, strokeWidth: 3, strokeDasharray: '5 5' }}
+                style={{
+                  fill: isLantern ? 'rgba(251,191,36,0.08)' : 'none',
+                  stroke: isLantern ? '#fbbf24' : '#646464',
+                  strokeOpacity: 0.9,
+                  strokeWidth: 3,
+                  strokeDasharray: '5 5',
+                }}
               />
             )
           })}

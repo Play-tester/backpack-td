@@ -33,7 +33,7 @@ import { SPELL_DEFS, type SpellKind } from './lib/spells'
 import { HERO_DEFS, getInitialHeroProgress, hasAnyShards, awardShards, pickShardDrop, type HeroKind, type HeroProgressMap } from './lib/heroes'
 import HeroesScreen from './components/HeroesScreen'
 import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
-import { CRAFTING_UPGRADES, getInitialCraftingState, isBallistaUnlocked, type CraftingState } from './lib/crafting'
+import { CRAFTING_UPGRADES, getInitialCraftingState, isBallistaUnlocked, isLanternUnlocked, type CraftingState } from './lib/crafting'
 import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
 import CraftingScreen from './components/CraftingScreen'
 
@@ -522,7 +522,7 @@ export default function App() {
     const nextWave = won ? wave + 1 : wave
     const nextTutorialConfig = getStepConfig(nextTutorialStep)
     const shopForceItems = (!won && wave === 2) ? ['frost', 'frost', 'frost', 'frost'] : nextTutorialConfig?.forceShopItems
-    const newSlots = generateShop(shopSize, nextWave, shopForceItems, isBallistaUnlocked(craftingState))
+    const newSlots = generateShop(shopSize, nextWave, shopForceItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
     setShopSlots(newSlots)
     setRerollCost(1)
     if (won) setWave(nextWave)
@@ -577,9 +577,14 @@ export default function App() {
     setWood(w => w - woodCost)
     const newCraftingState = { ...craftingState, [upgradeId]: level + 1 }
     setCraftingState(newCraftingState)
-    // If ballista was just researched and wave >= 13, refresh shop so it can appear
-    if (upgradeId === 'ballista_research' && wave >= 13) {
-      setShopSlots(generateShop(shopSize, wave, undefined, true))
+    // Refresh shop immediately when a tower unlock is researched so it can appear
+    const justUnlockedBallista = upgradeId === 'ballista_research' && wave >= 13
+    const justUnlockedLantern  = upgradeId === 'lantern_research'  && wave >= 17
+    if (justUnlockedBallista || justUnlockedLantern) {
+      setShopSlots(generateShop(shopSize, wave, undefined,
+        isBallistaUnlocked(newCraftingState),
+        isLanternUnlocked(newCraftingState),
+      ))
     }
   }
 
@@ -590,7 +595,7 @@ export default function App() {
     if (gold < rerollCost) return
     setGold(g => g - rerollCost)
     setRerollCost(c => Math.ceil(c * 1.5))
-    const rerolledSlots = generateShop(shopSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState))
+    const rerolledSlots = generateShop(shopSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
     setShopSlots(rerolledSlots)
     if (!hasSeenFrost.current && rerolledSlots.some(s => s.item.def.kind === 'frost')) {
       hasSeenFrost.current = true
@@ -639,7 +644,7 @@ export default function App() {
     if (perk.kind === 'expand_shop') {
       const newSize = shopSize + 1
       setShopSize(newSize)
-      const expandedSlots = generateShop(newSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState))
+      const expandedSlots = generateShop(newSize, wave, tutorialConfig?.forceShopItems, isBallistaUnlocked(craftingState), isLanternUnlocked(craftingState))
       setShopSlots(expandedSlots)
       if (!hasSeenFrost.current && expandedSlots.some(s => s.item.def.kind === 'frost')) {
         hasSeenFrost.current = true
@@ -877,6 +882,7 @@ export default function App() {
         <CraftingScreen
           gold={gold}
           wood={wood}
+          wave={wave}
           craftingState={craftingState}
           onUpgrade={handleCraftingUpgrade}
           showVillageGiftPopup={showVillageGift}
