@@ -994,7 +994,6 @@ export default function App() {
           }
         }}
         runes={runes}
-        onOpenShop={() => setActiveTab('shop')}
         onStartBattle={() => {
           setRoundResult(null)
           setHasDeployedInPrep(false)
@@ -1028,7 +1027,7 @@ function TradeUI({
   showHeroesTabHint, onDismissHeroesTabHint,
   musicVolume, onMusicVolumeChange,
   onInfoIconTap,
-  runes: _runes, onOpenShop,
+  runes: _runes,
   onStartBattle, onPickUpgrade, onPickBasePerk, onReroll, onSellItem,
   onCheatGold, onCheatWave,
 }: {
@@ -1049,7 +1048,6 @@ function TradeUI({
   musicVolume: number; onMusicVolumeChange: (v: number) => void
   onInfoIconTap?: () => void
   runes: number
-  onOpenShop: () => void
   onStartBattle: () => void
   onPickUpgrade: (u: Upgrade) => void
   onPickBasePerk: (p: BasePerk) => void
