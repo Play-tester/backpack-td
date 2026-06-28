@@ -1178,29 +1178,25 @@ function TradeUI({
             highlightSell={showSellHint}
           />
         </div>
-        <div className="battle-area-row">
-          {wave >= 5 ? (
-            <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
-              <img src="/Heroes/shop_icon.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />
-            </button>
-          ) : (
-            <div className="btn-shop-placeholder" />
-          )}
-          <div className="battle-btn-row">
-            <button
-              className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
-              onClick={onStartBattle}
-            >
-              {roundResult?.won === false
-                ? `↺ Retry Wave ${wave}`
-                : tutorialConfig?.highlightBattleBtn
-                ? `👉 Start Wave ${wave}`
-                : `⚔ Start Wave ${wave}`}
-            </button>
-          </div>
-          <div className="btn-shop-placeholder" />
+        <div className="battle-btn-row">
+          <button
+            className={`btn-battle${tutorialConfig?.highlightBattleBtn ? ' tutorial-highlight-btn' : ''}`}
+            onClick={onStartBattle}
+          >
+            {roundResult?.won === false
+              ? `↺ Retry Wave ${wave}`
+              : tutorialConfig?.highlightBattleBtn
+              ? `👉 Start Wave ${wave}`
+              : `⚔ Start Wave ${wave}`}
+          </button>
         </div>
       </section>
+
+      {wave >= 5 && (
+        <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
+          <img src="/Heroes/shop_icon.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />
+        </button>
+      )}
 
       <section className={`zone reserves-zone${tutorialConfig?.highlightShop ? ' tutorial-highlight' : ''}`}>
         <div className="zone-label">Reserves</div>
