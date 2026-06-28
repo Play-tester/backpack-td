@@ -1194,7 +1194,7 @@ function TradeUI({
 
       {wave >= 5 && (
         <button className="btn-shop-open" onClick={onOpenShop} aria-label="Open Shop">
-          <img src="/Heroes/shop_icon.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />
+          <img src="/Heroes/shop_icon.png" alt="" style={{ width: 49, height: 49, objectFit: 'contain' }} />
         </button>
       )}
 

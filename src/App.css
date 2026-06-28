@@ -643,7 +643,8 @@
 .btn-shop-open {
   align-self: flex-start;
   margin-left: 8px;
-  width: 38px; height: 38px;
+  margin-bottom: -30px;
+  width: 49px; height: 49px;
   background: transparent;
   border: none;
   border-radius: 10px;
