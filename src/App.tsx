@@ -35,6 +35,8 @@ import HeroesScreen from './components/HeroesScreen'
 import { saveGame, loadGame, clearSave, placedItemsToArray, arrayToPlacedItems, type SaveData } from './lib/save'
 import { CRAFTING_UPGRADES, getInitialCraftingState, isBallistaUnlocked, isLanternUnlocked, type CraftingState } from './lib/crafting'
 import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
+import WarCrowIntroScreen from './components/WarCrowIntroScreen'
+import FallenDruidIntroScreen from './components/FallenDruidIntroScreen'
 import CraftingScreen from './components/CraftingScreen'
 
 // ── Local types ────────────────────────────────────────────────────────────
@@ -162,9 +164,15 @@ export default function App() {
   const [craftingState, setCraftingState]           = useState<CraftingState>(savedGame?.craftingState ?? getInitialCraftingState())
   const [craftingUnlocked, setCraftingUnlocked]     = useState(savedGame?.craftingUnlocked ?? false)
   const [showShieldIntro, setShowShieldIntro]       = useState(false)
+  const [showWarCrowIntro, setShowWarCrowIntro]     = useState(false)
+  const [showDruidIntro, setShowDruidIntro]         = useState(false)
   const [showVillageGift, setShowVillageGift]       = useState(false)
-  const pendingShieldIntro = useRef(false)
-  const hasSeenShieldIntro  = useRef(savedGame?.hasSeenShieldIntro  ?? false)
+  const pendingShieldIntro  = useRef(false)
+  const pendingWarCrowIntro  = useRef(false)
+  const pendingDruidIntro    = useRef(false)
+  const hasSeenShieldIntro   = useRef(savedGame?.hasSeenShieldIntro  ?? false)
+  const hasSeenWarCrowIntro  = useRef(savedGame?.hasSeenWarCrowIntro ?? false)
+  const hasSeenDruidIntro    = useRef(savedGame?.hasSeenDruidIntro   ?? false)
   const hasSeenVillageGift  = useRef(savedGame?.hasSeenVillageWoodGift ?? false)
 
   // ── Background music ───────────────────────────────────────────────────────
@@ -191,6 +199,8 @@ export default function App() {
       craftingState,
       craftingUnlocked,
       hasSeenShieldIntro: hasSeenShieldIntro.current,
+      hasSeenWarCrowIntro: hasSeenWarCrowIntro.current,
+      hasSeenDruidIntro:   hasSeenDruidIntro.current,
       hasSeenVillageWoodGift: hasSeenVillageGift.current,
     }
     saveGame(data)
@@ -492,11 +502,21 @@ export default function App() {
       woodEarned = 2
       setWood(w => w + woodEarned)
     }
-    // First time player wins wave 11 — unlock crafting and queue intro
-    if (won && wave === 11 && !hasSeenShieldIntro.current) {
+    // First time player plays wave 11 (win or lose) — unlock crafting and queue shield intro
+    if (wave === 11 && !hasSeenShieldIntro.current) {
       hasSeenShieldIntro.current = true
       setCraftingUnlocked(true)
       pendingShieldIntro.current = true
+    }
+    // First time player plays wave 13 (win or lose) — queue War Crow intro
+    if (wave === 13 && !hasSeenWarCrowIntro.current) {
+      hasSeenWarCrowIntro.current = true
+      pendingWarCrowIntro.current = true
+    }
+    // First time player plays wave 17 (win or lose) — queue Fallen Druid intro
+    if (wave === 17 && !hasSeenDruidIntro.current) {
+      hasSeenDruidIntro.current = true
+      pendingDruidIntro.current = true
     }
 
     const rr: RoundResult = { won, kills: result.kills, escaped: result.escaped,
@@ -542,6 +562,18 @@ export default function App() {
       setShowShieldIntro(true)
       return
     }
+    // Show War Crow intro before going to trade (only first time)
+    if (pendingWarCrowIntro.current) {
+      pendingWarCrowIntro.current = false
+      setShowWarCrowIntro(true)
+      return
+    }
+    // Show Fallen Druid intro before going to trade (only first time)
+    if (pendingDruidIntro.current) {
+      pendingDruidIntro.current = false
+      setShowDruidIntro(true)
+      return
+    }
     // Wave 10 win = World 1 complete — show screen only the first time
     if (wave > 10 && !hasSeenWorld1Complete.current) {
       hasSeenWorld1Complete.current = true
@@ -559,6 +591,18 @@ export default function App() {
       hasSeenVillageGift.current = true
       setShowVillageGift(true)
     }
+    setActiveTab('crafting')
+    setPhase('trade')
+  }
+
+  function handleWarCrowIntroClose() {
+    setShowWarCrowIntro(false)
+    setActiveTab('crafting')
+    setPhase('trade')
+  }
+
+  function handleDruidIntroClose() {
+    setShowDruidIntro(false)
     setActiveTab('crafting')
     setPhase('trade')
   }
@@ -700,6 +744,22 @@ export default function App() {
     return (
       <div className="game-container">
         <ShieldBearerIntroScreen onClose={handleShieldIntroClose} />
+      </div>
+    )
+  }
+
+  if (showWarCrowIntro) {
+    return (
+      <div className="game-container">
+        <WarCrowIntroScreen onClose={handleWarCrowIntroClose} />
+      </div>
+    )
+  }
+
+  if (showDruidIntro) {
+    return (
+      <div className="game-container">
+        <FallenDruidIntroScreen onClose={handleDruidIntroClose} />
       </div>
     )
   }

@@ -1,0 +1,18 @@
+/* Fallen Druid intro — overrides on top of ShieldBearerIntroScreen.css */
+
+.fd-intro-tag {
+  background: #6d28d9;  /* deep violet — druid colour */
+}
+
+.fd-intro-sprite-wrap {
+  height: 110px;
+}
+
+/* Druid sheet is 1774×887 (4 frames horizontal). Show leftmost frame. */
+.fd-intro-sprite {
+  height: 200px;
+  width: auto;
+  object-fit: cover;
+  object-position: left center;
+  max-width: 220px;   /* show roughly first frame only */
+}

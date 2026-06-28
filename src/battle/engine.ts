@@ -131,7 +131,7 @@ const ENEMY_STATS: Record<EnemyKind, { hp: number; speed: number; gold: number; 
   swarm:  { hp: 35,  speed: 140, gold: 1, group: 3 },  // tiny, always spawns as a group of 3
   trojan: { hp: 800, speed: 30,  gold: 10 }, // boss — high HP, very slow, releases grunts on death
   shield: { hp: 110, speed: 55,  gold: 2  }, // Celtic shield bearer — absorbs 70% archer damage
-  crow:   { hp: 60,  speed: 90,  gold: 2  }, // War Crow (Badb Catha) — aerial, only ballista can hit
+  crow:   { hp: 60,  speed: 90,  gold: 2  }, // War Crow (Badb Catha) — aerial; ground towers can't target; ballista, heroes & skills can
   druid:  { hp: 90,  speed: 55,  gold: 3  }, // Fallen Druid — phases in/out; Lantern pins it visible
 }
 

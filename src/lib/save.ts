@@ -45,6 +45,8 @@ export interface SaveData {
   craftingState:   CraftingState
   craftingUnlocked: boolean
   hasSeenShieldIntro: boolean
+  hasSeenWarCrowIntro: boolean
+  hasSeenDruidIntro: boolean
   hasSeenVillageWoodGift: boolean
 }
 
@@ -103,6 +105,8 @@ export function getDefaultSave(startingGold: number, shopSize: number): SaveData
     craftingState:   getInitialCraftingState(),
     craftingUnlocked: false,
     hasSeenShieldIntro: false,
+    hasSeenWarCrowIntro: false,
+    hasSeenDruidIntro:   false,
     hasSeenVillageWoodGift: false,
   }
 }

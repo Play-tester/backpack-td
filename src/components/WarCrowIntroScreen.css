@@ -1,0 +1,15 @@
+/* War Crow intro — overrides on top of ShieldBearerIntroScreen.css */
+
+.wc-intro-tag {
+  background: #1e1b4b;  /* deep indigo — crow colour */
+}
+
+.wc-intro-sprite-wrap {
+  height: 110px;
+}
+
+/* Crow sheet is 887×1774 (4 frames vertical). Show top frame only. */
+.wc-intro-sprite {
+  height: 180px;   /* show roughly top quarter of the tall sheet */
+  object-position: top center;
+}
