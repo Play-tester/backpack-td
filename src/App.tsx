@@ -37,7 +37,6 @@ import ShieldBearerIntroScreen from './components/ShieldBearerIntroScreen'
 import WarCrowIntroScreen from './components/WarCrowIntroScreen'
 import FallenDruidIntroScreen from './components/FallenDruidIntroScreen'
 import CraftingScreen from './components/CraftingScreen'
-import GameShop from './components/GameShop'
 
 // ── Local types ────────────────────────────────────────────────────────────
 type GamePhase = 'narrative' | 'trade' | 'battle-prep' | 'battle' | 'world1-complete' | 'world-map' | 'world2-narrative'
@@ -164,7 +163,6 @@ export default function App() {
 
   // ── Crafting state ─────────────────────────────────────────────────────────
   const [wood, setWood]                             = useState(savedGame?.wood ?? 0)
-  const [runes, setRunes]                           = useState(savedGame?.runes ?? 0)
   const [craftingState, setCraftingState]           = useState<CraftingState>(savedGame?.craftingState ?? getInitialCraftingState())
   const [craftingUnlocked, setCraftingUnlocked]     = useState(savedGame?.craftingUnlocked ?? false)
   const [showShieldIntro, setShowShieldIntro]       = useState(false)
@@ -200,7 +198,6 @@ export default function App() {
       hasSeenShard: hasSeenShard.current,
       hasSeenFrost: hasSeenFrost.current,
       wood,
-      runes,
       craftingState,
       craftingUnlocked,
       hasSeenShieldIntro: hasSeenShieldIntro.current,
@@ -907,25 +904,7 @@ export default function App() {
     )
   }
 
-  // ── Shop tab ──────────────────────────────────────────────────────────────
-  if (activeTab === 'shop') {
-    return (
-      <div className="game-container" style={{ display: 'flex', flexDirection: 'column' }}>
-        <GameShop
-          gold={gold} wood={wood} runes={runes}
-          onClose={() => setActiveTab('battle')}
-          onEarn={reward => {
-            if (reward.gold)  setGold(g  => g  + (reward.gold  ?? 0))
-            if (reward.wood)  setWood(w  => w  + (reward.wood  ?? 0))
-            if (reward.runes) setRunes(r => r  + (reward.runes ?? 0))
-          }}
-        />
-        <BottomNav activeTab="shop" hasAcademy={hasAcademy} hasBasePerks={pickedBasePerks.length > 0} hasHeroes={hasAnyShards(heroProgress)} hasCrafting={craftingUnlocked} onTabChange={setActiveTab} />
-      </div>
-    )
-  }
-
-  // ── Base tab (includes Academy sub-tab) ───────────────────────────────────
+// ── Base tab (includes Academy sub-tab) ───────────────────────────────────
   if (activeTab === 'base') {
     return (
       <div className="game-container">
@@ -993,7 +972,6 @@ export default function App() {
             setTutorial({ active: false, currentStep: 'complete' })
           }
         }}
-        runes={runes}
         onStartBattle={() => {
           setRoundResult(null)
           setHasDeployedInPrep(false)
@@ -1027,7 +1005,6 @@ function TradeUI({
   showHeroesTabHint, onDismissHeroesTabHint,
   musicVolume, onMusicVolumeChange,
   onInfoIconTap,
-  runes: _runes,
   onStartBattle, onPickUpgrade, onPickBasePerk, onReroll, onSellItem,
   onCheatGold, onCheatWave,
 }: {
@@ -1047,7 +1024,6 @@ function TradeUI({
   showHeroesTabHint: boolean; onDismissHeroesTabHint: () => void
   musicVolume: number; onMusicVolumeChange: (v: number) => void
   onInfoIconTap?: () => void
-  runes: number
   onStartBattle: () => void
   onPickUpgrade: (u: Upgrade) => void
   onPickBasePerk: (p: BasePerk) => void
